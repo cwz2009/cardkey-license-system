@@ -1,0 +1,28 @@
+# 数据与密钥（绝不提交）
+data/
+*.db
+*.sqlite
+cos_config.json
+deploy_key
+deploy_key.pub
+injected.json
+
+# 运行时产物
+work/
+source_backup/
+injected/
+*.apk
+*.zip
+*.idsig
+
+# Python
+__pycache__/
+*.pyc
+
+# 备份文件
+*.bak*
+*.deprecated*
+
+# 系统
+.DS_Store
+Thumbs.db
