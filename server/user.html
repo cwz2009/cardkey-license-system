@@ -1,0 +1,393 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2024%2024%27%3E%3Cpath%20fill%3D%27%234d7cf6%27%20d%3D%27M12%202l8%204v6c0%205-3.5%208-8%2010-4.5-2-8-5-8-10V6z%27/%3E%3Cpath%20fill%3D%27none%27%20stroke%3D%27%23fff%27%20stroke-width%3D%272.2%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%20d%3D%27M9.2%2012.4l2%202%204.4-4.8%27/%3E%3C/svg%3E">
+<meta name="theme-color" content="#06070d">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>卡密验证 · 用户端</title>
+<script>
+// 服务器地址：下载到本地用浏览器打开也能联网验证（后端已开启 CORS *）
+const API_BASE = location.origin;
+(function(){
+  var t = localStorage.getItem('cardkey_user_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+})();
+</script>
+<style>
+  :root{
+    --bg:#06070d;
+    --bg-grad:radial-gradient(130% 100% at 50% -10%, #11142a 0%, #090a14 45%, #04050a 100%);
+    --panel:rgba(20,23,40,.62); --line:rgba(150,170,255,.16);
+    --txt:#eaf0ff; --sub:#8b93b5;
+    --acc:#4d7cf6; --acc-2:#6d93f8; --acc-3:#8fb0fa; --acc-text:#0a0b14;
+    --ok:#34d399; --warn:#f5a623; --bad:#ff5d5d;
+    --input-bg:rgba(10,12,22,.7); --splash-bg:#05060c;
+    --gem:linear-gradient(120deg,#4d7cf6 0%,#3a63d0 100%);
+    --ease:cubic-bezier(.16,1,.3,1);
+  }
+  /* 暗夜宝石：玻璃磨砂 + 流光按钮 + 背景宝石光晕 */
+  [data-theme="dark"] body{background:var(--bg-grad)}
+  [data-theme="dark"] body::before{
+    content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:
+      radial-gradient(60% 50% at 16% 10%, rgba(33,212,253,.12), transparent 60%),
+      radial-gradient(55% 45% at 86% 6%, rgba(255,110,199,.12), transparent 60%),
+      radial-gradient(75% 60% at 50% 102%, rgba(124,92,255,.16), transparent 60%);
+  }
+  [data-theme="dark"] .card,[data-theme="dark"] .ann,[data-theme="dark"] .banner{
+    background:var(--panel);
+    -webkit-backdrop-filter:blur(18px) saturate(1.2);backdrop-filter:blur(18px) saturate(1.2);
+    border:1px solid var(--line);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.07), 0 16px 44px rgba(0,0,0,.6);
+  }
+  [data-theme="dark"] button.act{
+    background:var(--gem);background-size:250% 250%;animation:gem 6s ease infinite;
+    color:var(--acc-text);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.45), 0 8px 28px rgba(124,92,255,.4);
+  }
+  [data-theme="dark"] .splash-bar > i{background:var(--acc)}
+  @keyframes gem{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+
+  [data-theme="gold"]{
+    --bg:#1a140c;
+    --bg-grad:radial-gradient(135% 105% at 50% -12%, #2e2316 0%, #1c150d 52%, #120d07 100%);
+    --panel:rgba(46,34,18,.55);
+    --line:rgba(214,178,90,.22);
+    --txt:#f6efe0; --sub:#9c8c6e; --acc:#c9a227; --acc-2:#b8860b; --acc-text:#1a140c;
+    --ok:#34d399; --warn:#f5a623; --bad:#ff5d5d;
+    --input-bg:rgba(20,15,8,.6); --splash-bg:#1a140c;
+    --gem:linear-gradient(120deg,#dcb54e 0%,#c9a227 45%,#b8860b 100%);
+  }
+  [data-theme="gold"] body{background:var(--bg-grad)}
+  [data-theme="gold"] .card,[data-theme="gold"] .ann,[data-theme="gold"] .banner{
+    background:var(--panel);
+    -webkit-backdrop-filter:blur(16px) saturate(1.15);backdrop-filter:blur(16px) saturate(1.15);
+    border:1px solid var(--line);
+    box-shadow:inset 0 1px 0 rgba(255,240,205,.10), 0 14px 38px rgba(0,0,0,.42);
+  }
+  [data-theme="gold"] button.act{
+    background:linear-gradient(180deg,#dcb54e 0%,#b8860b 100%);
+    color:var(--acc-text);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.28), 0 8px 22px rgba(184,134,11,.32);
+  }
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft Yahei",sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased;min-height:100vh}
+  body,.card,.ann,.banner,input,button{transition:background-color .45s var(--ease),color .45s var(--ease),border-color .45s var(--ease),box-shadow .45s var(--ease)}
+
+  /* 开屏 */
+  #splash{position:fixed;inset:0;z-index:200;background:var(--splash-bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;transition:opacity .6s var(--ease),transform .6s var(--ease),filter .6s ease,background-color .45s var(--ease)}
+  #splash.hide{opacity:0;visibility:hidden;transform:scale(1.03);filter:blur(4px)}
+  .splash-mark{width:68px;height:68px;animation:markIn .9s var(--ease) both}
+  .splash-mark svg{width:68px;height:68px;stroke:var(--txt);fill:none;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:230;stroke-dashoffset:230;animation:draw 1s cubic-bezier(.65,0,.35,1) .25s forwards}
+  @keyframes markIn{0%{transform:scale(.92);opacity:0}100%{transform:scale(1);opacity:1}}
+  @keyframes draw{to{stroke-dashoffset:0}}
+  .splash-title{font-size:18px;font-weight:600;letter-spacing:2px;opacity:0;animation:titleIn .8s .5s var(--ease) forwards}
+  @keyframes titleIn{from{opacity:0;letter-spacing:9px;transform:translateY(6px)}to{opacity:1;letter-spacing:2px;transform:none}}
+  .splash-bar{position:relative;width:128px;height:2px;border-radius:2px;background:rgba(255,255,255,.1);overflow:hidden}
+  .splash-bar > i{position:absolute;left:0;top:0;height:100%;width:100%;background:var(--acc);transform:scaleX(0);transform-origin:left;animation:fill 2.1s cubic-bezier(.16,1,.3,1) .3s forwards}
+  @keyframes fill{to{transform:scaleX(1)}}
+
+  .app{max-width:520px;margin:0 auto;padding:30px 16px 40px;display:none}
+  .app.show{display:block;animation:rise .5s var(--ease) both}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+  h1{font-size:20px;font-weight:600;margin:0;letter-spacing:.3px}
+  .theme-toggle{background:none;border:1px solid var(--line);color:var(--sub);border-radius:20px;padding:7px 14px;font-size:12px;cursor:pointer;transition:color .2s,border-color .2s}
+  .theme-toggle:active{transform:scale(.96)}
+  .ann{background:rgba(124,92,255,.08);border:1px solid var(--line);color:var(--txt);border-radius:12px;padding:12px 14px;font-size:13px;margin-bottom:14px;display:none;animation:rise .4s var(--ease) both}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:18px;margin-bottom:14px;animation:rise .45s .05s var(--ease) both}
+  label{font-size:13px;color:var(--sub);display:block;margin-bottom:7px}
+  input.k{width:100%;background:var(--input-bg);border:1px solid var(--line);color:var(--txt);border-radius:12px;padding:14px;font-size:17px;letter-spacing:2px;outline:none;transition:border-color .2s;text-transform:uppercase}
+  input.k:focus{border-color:var(--acc)}
+  button.act{width:100%;background:var(--acc);color:var(--acc-text);border:0;border-radius:12px;padding:15px;font-size:17px;font-weight:600;cursor:pointer;transition:transform .12s,filter .2s;margin-top:14px}
+  button.act:hover{filter:brightness(1.05)}
+  button.act:active{transform:scale(.97)}
+  .muted{color:var(--sub);font-size:13px;word-break:break-all}
+  .mono{font-family:ui-monospace,Menlo,monospace;font-size:14px}
+  .row{display:flex;justify-content:space-between;align-items:center}
+  .banner{display:none;background:rgba(255,93,93,.12);border:1px solid rgba(255,93,93,.4);color:#ffb3b3;border-radius:12px;padding:14px;margin-bottom:14px;font-size:14px;animation:rise .4s var(--ease) both}
+  @keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  /* 公告居中弹框（SSE 实时推送） */
+  #annModal-mask{position:fixed;inset:0;z-index:500;display:none;align-items:center;justify-content:center;background:rgba(2,3,8,.6);animation:fade .2s ease}
+  #annModal-box{width:min(90vw,420px);background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 24px 70px rgba(0,0,0,.6);animation:pop .25s var(--ease)}
+  .am-h{display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px;margin-bottom:12px}
+  .am-h #annModal-ico{font-size:18px}
+  .am-x{margin-left:auto;background:none;border:none;color:var(--sub);font-size:24px;line-height:1;cursor:pointer;padding:0 4px}
+  .am-b{white-space:pre-wrap;line-height:1.65;color:var(--txt);font-size:14px;max-height:52vh;overflow:auto}
+  .am-f{margin-top:16px;text-align:right}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+  @keyframes pop{from{opacity:0;transform:translateY(12px) scale(.98)}to{opacity:1;transform:none}}
+
+/* —— 全站统一打磨（2026-08-11）：聚焦环 / 选中色 / 配色模式 / 减弱动效 / 悬停反馈 —— */
+:root{color-scheme:dark}
+[data-theme="light"]{color-scheme:light}
+::selection{background:rgba(77,124,246,.32);color:inherit}
+:focus-visible{outline:2px solid var(--acc,#4d7cf6);outline-offset:2px}
+button,input,textarea,select{font-family:inherit}
+button.act:hover,button:hover,.btn-primary:hover{filter:brightness(1.08)}
+button:active,.btn:active{transform:scale(.97)}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+
+/* —— 开屏统一（与后台同一套）：描边自绘盾牌 + 呼吸环 + 纤细滑动线（去旧"进度条填满"AI味） —— */
+#splash{background:var(--splash-bg)}
+.splash-mark{width:104px;height:104px;position:relative;display:flex;align-items:center;justify-content:center;animation:markIn .4s ease both}
+.splash-mark svg{width:74px;height:74px;fill:none;stroke:var(--acc);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.emblem-shield{stroke-dasharray:140;stroke-dashoffset:140;animation:drawIn 1s cubic-bezier(.65,.05,.36,1) forwards}
+.emblem-check{stroke-dasharray:44;stroke-dashoffset:44;animation:drawIn .5s .6s cubic-bezier(.65,.05,.36,1) forwards}
+@keyframes drawIn{to{stroke-dashoffset:0}}
+.splash-ring{position:absolute;inset:0;margin:auto;width:96px;height:96px;border-radius:50%;border:1.5px solid var(--acc);opacity:0;animation:ringPulse 2.6s var(--ease) infinite}
+.splash-ring.r2{animation-delay:1.3s}
+@keyframes ringPulse{0%{transform:scale(.5);opacity:.5}70%{transform:scale(1.12);opacity:0}100%{opacity:0}}
+.splash-title{opacity:0;transform:translateY(10px);animation:fadeUpS .55s .55s var(--ease) forwards;letter-spacing:4px}
+.splash-sub{opacity:0;transform:translateY(8px);animation:fadeUpS .55s .72s var(--ease) forwards;letter-spacing:2px}
+@keyframes fadeUpS{to{opacity:1;transform:none}}
+.splash-bar{position:relative;width:132px;height:2px;border-radius:2px;background:var(--line);overflow:hidden;margin-top:6px}
+[data-theme] .splash-bar > i{width:38%;height:100%;background:var(--acc);border-radius:2px;transform:none;animation:slideX 1.25s var(--ease) infinite}
+@keyframes slideX{0%{transform:translateX(-120%)}100%{transform:translateX(340%)}}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="splash-mark">
+    <span class="splash-ring"></span>
+    <span class="splash-ring r2"></span>
+    <svg viewBox="0 0 24 24" class="splash-emblem" aria-hidden="true">
+      <path class="emblem-shield" d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/>
+      <path class="emblem-check" d="M9 12l2 2 4-4"/>
+    </svg>
+  </div>
+  <div class="splash-title">卡密验证</div>
+  <div class="splash-sub">安全验证 · 云控管理</div>
+  <div class="splash-bar"><i></i></div>
+</div>
+
+<div class="app" id="app">
+  <div class="topbar">
+    <h1>卡密验证</h1>
+    <button class="theme-toggle" id="theme-btn">主题</button>
+  </div>
+  <div class="ann" id="ann"></div>
+  <div class="banner" id="lock"></div>
+  <div class="card">
+    <label>请输入卡密</label>
+    <input id="key" class="k" placeholder="XXXX-XXXX-XXXX-XXXX" autocomplete="off" inputmode="text" spellcheck="false">
+    <button class="act" id="act">验证激活</button>
+    <div id="out" class="muted" style="margin-top:12px"></div>
+  </div>
+  <div class="card" id="res" style="display:none">
+    <div class="row"><strong>状态</strong><span id="r-status" style="color:var(--ok)">已激活</span></div>
+    <div class="muted" style="margin-top:10px">激活时间：<span id="r-act"></span></div>
+    <div class="muted">到期时间：<span id="r-exp"></span></div>
+    <div class="muted">剩余时长：<span id="r-cd" class="mono"></span></div>
+  </div>
+</div>
+
+<script>
+const API = API_BASE + "/index.php";
+// 安全存储封装：WebView 可能未开启 DOM 存储导致 localStorage 为 null，这里兜底到内存
+var _memStore = {};
+var store = {
+  getItem: function(k){ try { if (window.localStorage) return window.localStorage.getItem(k); } catch(e){} return (k in _memStore) ? _memStore[k] : null; },
+  setItem: function(k, v){ try { if (window.localStorage) { window.localStorage.setItem(k, v); return; } } catch(e){} _memStore[k] = String(v); },
+  removeItem: function(k){ try { if (window.localStorage) window.localStorage.removeItem(k); } catch(e){} delete _memStore[k]; }
+};
+let exp = 0, timer = null;
+
+/* 主题切换 */
+function setTheme(name){
+  if(document.documentElement.getAttribute("data-theme") === name) return;
+  document.documentElement.setAttribute("data-theme", name);
+  localStorage.setItem("cardkey_user_theme", name);
+  updateThemeBtn();
+}
+function updateThemeBtn(){
+  const t = document.documentElement.getAttribute("data-theme") || "dark";
+  const btn = document.getElementById("theme-btn");
+  if(btn) btn.textContent = t === "gold" ? "夜间" : "日间";
+}
+document.getElementById("theme-btn").onclick = () => {
+  const cur = document.documentElement.getAttribute("data-theme") || "dark";
+  setTheme(cur === "dark" ? "gold" : "dark");
+};
+updateThemeBtn();
+
+function pad(n){ return String(n).padStart(2, "0"); }
+function fmtDateTime(t){
+  if(!t) return "-";
+  const d = new Date(t * 1000);
+  return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) + " " + pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds());
+}
+function cd(e){
+  if(e === 0) return "永久有效";
+  let s = Math.floor(e - Date.now() / 1000);
+  if(s <= 0) return "已到期";
+  const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
+  return d + "天" + h + "时" + m + "分" + x + "秒";
+}
+function tick(){ document.getElementById("r-cd").textContent = cd(exp); }
+
+/* 公告改由底部 SSE 接收后，以屏幕正中央弹框呈现（见脚本末尾） */
+
+function showLock(msg){ const b = document.getElementById("lock"); b.textContent = msg; b.style.display = "block"; }
+
+/* 删除即锁死：激活后周期复核卡密状态；被删/作废/过期 → 锁屏并停表 */
+function startUserWatch(k){
+  if(timer) clearInterval(timer);
+  timer = setInterval(async () => {
+    try{
+      const r = await fetch(API + "?action=verify&key=" + encodeURIComponent(k)).then(x => x.json());
+      const dead = !r.ok || r.status === "revoked" || r.status === "expired" || (r.expires_at && r.expires_at < Date.now()/1000);
+      if(dead){
+        clearInterval(timer); timer = null;
+        showLock("⛔ 该卡密已被管理员停用或已失效，无法继续使用。");
+        document.getElementById("res").style.display = "none";
+      }
+    }catch(_){ /* 离线忽略 */ }
+  }, 20000);
+}
+
+document.getElementById("act").onclick = async () => {
+  const k = document.getElementById("key").value.trim().toUpperCase();
+  const out = document.getElementById("out");
+  if(!k){ out.textContent = "请输入卡密"; return; }
+  out.textContent = "验证中…";
+  try{
+    const r = await fetch(API + "?action=activate", {
+      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "key=" + encodeURIComponent(k)
+    }).then(async x => {
+      const t = await x.text();
+      try { return JSON.parse(t); } catch(ex){ throw new Error("服务器返回异常：" + t.slice(0,120)); }
+    });
+    if(!r.ok){
+      out.textContent = "失败：" + r.error;
+      if(r.error === "卡密已过期") showLock("该卡密已过期，访问权限已锁定，卡密已销毁，无法继续使用。");
+      return;
+    }
+    out.textContent = "✅ 激活成功";
+    exp = r.expires_at;
+    document.getElementById("r-act").textContent = fmtDateTime(r.activated_at);
+    document.getElementById("r-exp").textContent = r.permanent ? "永久有效" : fmtDateTime(r.expires_at);
+    document.getElementById("res").style.display = "block";
+    tick(); if(timer) clearInterval(timer);
+    timer = setInterval(tick, 1000);
+    startUserWatch(k);
+  }catch(e){
+    out.textContent = "网络错误：" + e.message + "（请检查网络或服务器是否在线）";
+    console.error("activate 失败", e);
+  }
+};
+
+/* 开屏：直接启动 + 6 秒兜底，避免永久卡屏 */
+function bootSplash(){
+  setTimeout(() => {
+    const sp = document.getElementById("splash");
+    if(sp) sp.classList.add("hide");
+    setTimeout(() => { document.getElementById("app").classList.add("show"); }, 620);
+  }, 2200);
+}
+bootSplash();
+setTimeout(() => {
+  const sp = document.getElementById("splash");
+  if(sp && !sp.classList.contains("hide")){ sp.classList.add("hide"); document.getElementById("app").classList.add("show"); }
+/* ===== 公告居中弹框（SSE 实时推送，可关闭） ===== */
+function showAnnModal(text, title){
+  const m = document.getElementById("annModal-mask");
+  document.getElementById("annModal-body").textContent = text;
+  document.getElementById("annModal-title").textContent = title || "系统公告";
+  m.style.display = "flex";
+}
+let _seenWebVer = Number(store.getItem("cardkey_webver") || 0);
+let _seenAnn = " ", _seenAnnV = " ", _seenLatest = -1;
+let _seenAnnKey = "", _dismissedAnnKey = "";   // 当前/已关闭的公告内容指纹，避免反复弹
+function hideAnnModal(){
+  const m = document.getElementById("annModal-mask");
+  if(m) m.style.display = "none";
+  _dismissedAnnKey = _seenAnnKey;   // 记住关闭的是哪条，避免被 SSE/轮询反复重新弹出
+}
+
+function handlePushState(st){
+  if(!st) return;
+  if(st.web_ver){
+    if(_seenWebVer && st.web_ver > _seenWebVer){ location.reload(true); return; }
+    _seenWebVer = st.web_ver; store.setItem("cardkey_webver", String(st.web_ver));
+  }
+  if("announce" in st || "announce_verify" in st){
+    const a  = ("announce" in st)        ? (st.announce || "")        : _seenAnn;
+    const av = ("announce_verify" in st) ? (st.announce_verify || "") : _seenAnnV;
+    const key = a + "\u0001" + av;
+    if(key !== _seenAnnKey){
+      _seenAnnKey = key; _seenAnn = a; _seenAnnV = av;
+      const parts = [];
+      if(a)  parts.push("📢 " + a);
+      if(av) parts.push("🔑 " + av);
+      const txt = parts.join("\n\n");
+      if(txt && txt !== _dismissedAnnKey) showAnnModal(txt, "系统公告");
+    }
+  }
+  if(st.latest && st.latest !== _seenLatest){
+    _seenLatest = st.latest;
+    if(typeof checkUpdate === "function") checkUpdate();
+  }
+}
+
+function inShell(){
+  try { return !!(window.CardKeyBridge && typeof window.CardKeyBridge.launchOriginal === "function"); }
+  catch(e){ return false; }
+}
+async function checkUpdate(){
+  if(inShell()) return; // 注入壳内不提示 OTA 更新（最终版策略）
+  try{
+    const r = await fetch(API + "?action=version_check&v=" + (window.__APP_VER__ || 0)).then(x => x.json());
+    if(r && r.need_update){
+      showAnnModal("发现新版本（v" + r.latest + "），建议更新后使用：\n" + (r.url || ""), "版本更新");
+    }
+  }catch(_){}
+}
+
+(function(){
+  // 用事件委托绑定关闭（脚本在弹框 HTML 之前解析，直接 getElementById 会拿不到元素）
+  document.addEventListener("click", function(e){
+    const t = e.target;
+    if(!t) return;
+    if(t.id === "annModal-x" || t.id === "annModal-ok" || t.id === "annModal-mask") hideAnnModal();
+  });
+  let es = null;
+  try { es = new EventSource(API_BASE + "/index.php?action=stream"); } catch(_) {}
+  if(es){ es.onmessage = (e) => { try { handlePushState(JSON.parse(e.data)); } catch(_){} }; }
+  setInterval(() => {
+    fetch(API + "?action=version_check&v=" + (window.__APP_VER__ || 0)).then(x => x.json()).then(async r => {
+      const obj = { web_ver: r.web_ver, latest: r.latest };
+      try{
+        const [a1, a2] = await Promise.all([
+          fetch(API + "?action=announce").then(x => x.json()),
+          fetch(API + "?action=announce_verify").then(x => x.json())
+        ]);
+        obj.announce = (a1 && a1.announce) || "";
+        obj.announce_verify = (a2 && a2.announce_verify) || "";
+      }catch(_){}
+      handlePushState(obj);
+    }).catch(()=>{});
+  }, 15000);
+})();
+
+}, 6000);
+</script>
+<!-- 公告居中弹框（SSE 推送 / 加载时弹出，可关闭） -->
+<div class="mask" id="annModal-mask" style="display:none">
+  <div class="annmodal" id="annModal-box">
+    <div class="am-h">
+      <span id="annModal-ico">📢</span>
+      <span id="annModal-title">系统公告</span>
+      <button class="am-x" id="annModal-x" aria-label="关闭">×</button>
+    </div>
+    <div class="am-b" id="annModal-body"></div>
+    <div class="am-f"><button class="act" id="annModal-ok">我知道了</button></div>
+  </div>
+</div>
+</body>
+</html>
