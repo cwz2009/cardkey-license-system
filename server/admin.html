@@ -1,0 +1,3488 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>卡密云系统</title>
+<script>
+(function(){try{var t=localStorage.getItem('cardkey_theme')||'dark';document.documentElement.setAttribute('data-theme',t);}catch(_){document.documentElement.setAttribute('data-theme','dark');}})();
+</script>
+<style>
+  /* 曜石黑（默认）：黑底 + 深灰渐变按钮 + 柔白文字，低调克制（静态渲染，低端机流畅） */
+  :root{
+    --bg:#0d0e12;
+    --bg-grad:#0d0e12;
+    --panel:#16171d; --panel2:#1e2028; --line:rgba(255,255,255,.09);
+    --txt:#e8e9ee; --sub:#8f919c;
+    --acc:#2c2e37; --acc-2:#c8cad2; --acc-3:#f0f1f4; --acc-text:#f0f1f4;
+    --ok:#3fa67a; --warn:#cf952e; --bad:#ff5d5d;
+    --tabbg:rgba(13,14,18,.96); --input-bg:#1b1c23; --splash-bg:#0d0e12;
+    --gem:linear-gradient(120deg,#3a3c46 0%,#262830 100%);
+    --ease:cubic-bezier(.25,.1,.25,1);
+  }
+  /* 曜石黑：深灰按钮 + 细腻描边 + 柔和层次 */
+  [data-theme="dark"] body{background:#0d0e12}
+  [data-theme="dark"] .card,
+  [data-theme="dark"] .stat,
+  [data-theme="dark"] .login-card,
+  [data-theme="dark"] .modal,
+  [data-theme="dark"] .annmodal{
+    background:#16171d;
+    border:1px solid rgba(255,255,255,.08);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04), 0 10px 28px rgba(0,0,0,.30);
+  }
+  [data-theme="dark"] button.act,
+  [data-theme="dark"] .login-card button,
+  [data-theme="dark"] .seg button.on{
+    background:linear-gradient(180deg,#34363f 0%,#262830 100%);
+    color:#f0f1f4;
+    border:1px solid rgba(255,255,255,.12);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+  }
+  [data-theme="dark"] .splash-bar > i{background:linear-gradient(90deg,#c8cad2,#8f919c)}
+  [data-theme="dark"] .theme-opt.on{border-color:#c8cad2}
+
+  /* 商务金：米色底 + 深棕字 + 沉稳金点缀（降亮度，更耐看） */
+  [data-theme="gold"]{
+    --bg:#f0ebdf;
+    --bg-grad:#f0ebdf;
+    --panel:#faf6ec;
+    --panel2:#f1e9d9; --line:rgba(150,120,70,.24);
+    --txt:#3a3224; --sub:#87795f;
+    --acc:#8a6d34; --acc-2:#6f5628; --acc-3:#a9884a; --acc-text:#ffffff;
+    --ok:#3f8f6a; --warn:#c08828; --bad:#dd4d4d;
+    --tabbg:rgba(250,246,236,.97); --input-bg:#fdfaf3; --splash-bg:#f0ebdf;
+    --gem:linear-gradient(120deg,#96783c 0%,#7d6430 100%);
+  }
+
+  /* 暮光蓝：深海军蓝底 + 低饱和雾蓝点缀（沉稳不艳） */
+  [data-theme="blue"]{
+    --bg:#0e1420;
+    --bg-grad:#0e1420;
+    --panel:#151d2c; --panel2:#1b2538; --line:rgba(140,170,220,.16);
+    --txt:#dfe6f2; --sub:#8a96ad;
+    --acc:#4d6f9c; --acc-2:#7ea6d4; --acc-3:#9db8dd; --acc-text:#f2f6fc;
+    --ok:#3fa67a; --warn:#cf952e; --bad:#ff5d5d;
+    --tabbg:rgba(14,20,32,.96); --input-bg:#121a28; --splash-bg:#0e1420;
+    --gem:linear-gradient(120deg,#4d6f9c 0%,#38547c 100%);
+  }
+  [data-theme="blue"] body{background:#0e1420}
+  [data-theme="blue"] .card,
+  [data-theme="blue"] .stat,
+  [data-theme="blue"] .login-card,
+  [data-theme="blue"] .modal,
+  [data-theme="blue"] .annmodal{
+    background:#151d2c;
+    border:1px solid rgba(140,170,220,.14);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 10px 28px rgba(0,0,0,.34);
+  }
+  [data-theme="blue"] button.act,
+  [data-theme="blue"] .login-card button,
+  [data-theme="blue"] .seg button.on{
+    background:linear-gradient(180deg,#4d6f9c 0%,#38547c 100%);
+    color:#fff;
+    border:1px solid rgba(255,255,255,.12);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.18);
+  }
+  [data-theme="blue"] .splash-bar > i{background:linear-gradient(90deg,#7ea6d4,#38547c)}
+  [data-theme="blue"] .theme-opt.on{border-color:#7ea6d4}
+
+  /* 雾白：柔和浅灰底 + 沉稳蓝（降亮度，不刺眼） */
+  [data-theme="light"]{
+    --bg:#eceef1;
+    --bg-grad:#eceef1;
+    --panel:#f7f8fa;
+    --panel2:#eef0f4; --line:rgba(30,40,55,.10);
+    --txt:#2f333b; --sub:#787d88;
+    --acc:#3f6cb0; --acc-2:#2f5a94; --acc-3:#6d92c8; --acc-text:#ffffff;
+    --ok:#2f9168; --warn:#c0831f; --bad:#dd4d4d;
+    --tabbg:rgba(247,248,250,.97); --input-bg:#fbfcfd; --splash-bg:#eceef1;
+    --gem:linear-gradient(120deg,#4a76b8 0%,#35609c 100%);
+  }
+  [data-theme="light"] body{background:#eceef1}
+  [data-theme="light"] .card,
+  [data-theme="light"] .stat,
+  [data-theme="light"] .login-card,
+  [data-theme="light"] .modal,
+  [data-theme="light"] .annmodal{
+    background:#f7f8fa;
+    border:1px solid rgba(30,40,55,.09);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.9), 0 6px 20px rgba(30,40,60,.05);
+  }
+  [data-theme="light"] button.act,
+  [data-theme="light"] .login-card button,
+  [data-theme="light"] .seg button.on{
+    background:linear-gradient(180deg,#4a76b8 0%,#35609c 100%);
+    color:#fff;
+    border:1px solid rgba(255,255,255,.16);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.28);
+  }
+  [data-theme="light"] .splash-bar > i{background:linear-gradient(90deg,#6d92c8,#2f5a94)}
+  [data-theme="light"] .theme-opt.on{border-color:#35609c}
+  /* 主题切换：极简过渡（仅背景/文字/边框色，0.2s），低端机切换不卡 */
+  body,.card,.stat,.login-card,.modal,.annmodal,.tabbar,input,textarea,.seg,.krow,.res .line,.chk,#splash,#login,.ann,.banner,.theme-opt{
+    transition:background-color .2s ease,color .2s ease,border-color .2s ease;
+  }
+  /* ===== 轻量动效：只用 GPU 属性(transform/opacity) + 短时长，低端机不卡；尊重系统「减弱动态效果」 ===== */
+  .krow,.stat,.theme-opt{transition:transform .18s ease,opacity .18s ease,border-color .2s ease}
+  .krow:hover,.theme-opt:hover{transform:translateY(-1px)}
+  button.act:active,.ghost:active,.seg button:active,.krow:active{transform:scale(.96)}
+  #login.show,.modal.show,.annmodal.show,.ann.show{animation:fadeUp .22s ease}
+  .splash-bar i{animation:splashPulse 1.6s ease-in-out infinite}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  @keyframes splashPulse{0%,100%{opacity:1}50%{opacity:.45}}
+  @media (prefers-reduced-motion:reduce){
+    .krow,.stat,.theme-opt,#login.show,.modal.show,.annmodal.show,.ann.show,.splash-bar i{transition:none!important;animation:none!important}
+    .krow:hover,.theme-opt:hover,button.act:active,.ghost:active,.seg button:active,.krow:active{transform:none}
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;height:100%}
+  body{background:var(--bg);color:var(--txt);font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft Yahei",sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+
+  /* ===== 开屏（极简版：纯色底 + 图标淡入 + 进度条，无光晕/光环/描画动画，低端机流畅） ===== */
+  #splash{position:fixed;top:0;left:0;width:100%;height:100%;z-index:200;background:var(--splash-bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;overflow:hidden;transition:opacity .3s ease}
+  #splash.hide{opacity:0;visibility:hidden}
+  .splash-mark{position:relative;width:96px;height:96px;display:flex;align-items:center;justify-content:center;animation:markIn .5s ease both}
+  .splash-ring{display:none}
+  .splash-mark svg{width:64px;height:64px;stroke:var(--acc);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  @keyframes markIn{from{opacity:0}to{opacity:1}}
+  /* 性能：低端机 / 减少动效偏好的设备直接简化 */
+  @media (prefers-reduced-motion: reduce) {
+    .splash-mark, .splash-bar > i, .splash-title, .splash-sub { animation:none !important; }
+    .splash-title, .splash-sub{opacity:1}
+    .splash-bar > i{transform:scaleX(1)}
+  }
+  .splash-title{font-size:19px;font-weight:600;letter-spacing:3px;opacity:0;color:var(--txt);animation:fadeIn .6s .35s ease forwards}
+  .splash-sub{font-size:12px;color:var(--sub);letter-spacing:1px;opacity:0;animation:fadeIn .6s .5s ease forwards}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .splash-bar{position:relative;width:140px;height:3px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:4px}
+  .splash-bar > i{position:absolute;left:0;top:0;height:100%;width:100%;background:var(--acc);transform:scaleX(0);transform-origin:left;border-radius:3px;animation:fill 2s ease .3s forwards}
+  @keyframes fill{to{transform:scaleX(1)}}
+
+  /* ===== 登录（单一界面，管理员 / 普通用户共用） ===== */
+  #login{position:fixed;inset:0;z-index:150;background:var(--splash-bg);display:none;align-items:center;justify-content:center;padding:24px;animation:fade .3s ease}
+  #login.show{display:flex}
+  .login-card{width:100%;max-width:320px;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:28px 22px;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+  .login-card .lt{font-size:19px;font-weight:700;letter-spacing:1px;text-align:center;margin-bottom:6px}
+  .login-card .ls{font-size:12px;color:var(--sub);text-align:center;margin-bottom:24px}
+  .login-card input{width:100%;background:var(--input-bg);border:1px solid var(--line);color:var(--txt);border-radius:13px;padding:15px;font-size:16px;outline:none;transition:border-color .2s;margin-bottom:14px}
+  .login-card input:focus{border-color:var(--acc-2)}
+  .login-card .lerr{font-size:12px;color:var(--bad);text-align:center;min-height:16px;margin-bottom:6px}
+  .login-card button{width:100%;background:var(--acc);color:var(--acc-text);border:0;border-radius:13px;padding:15px;font-size:16px;font-weight:600;cursor:pointer;transition:transform .12s,filter .2s}
+  .login-card button:active{transform:scale(.97)}
+
+  .app{max-width:560px;margin:0 auto;padding:14px 14px calc(96px + env(safe-area-inset-bottom));min-height:100%}
+  .screen{display:none}
+  .screen.active{display:block;animation:fade .2s ease}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+
+  header.top{display:flex;align-items:center;justify-content:space-between;padding:6px 2px 14px}
+  h1{font-size:19px;font-weight:600;margin:0;letter-spacing:.3px}
+  .rolebadge{font-size:11px;color:var(--sub);border:1px solid var(--line);border-radius:20px;padding:4px 10px}
+  .live{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--sub)}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--ok)}
+  .ping{display:inline-flex;align-items:center;font-size:12px;color:var(--sub);font-variant-numeric:tabular-nums;padding:3px 9px;border:1px solid var(--line);border-radius:20px;background:var(--input-bg);white-space:nowrap}
+  .ping b{font-weight:600;margin-left:3px}
+  .ping.good b{color:var(--ok)} .ping.mid b{color:var(--warn)} .ping.bad b{color:var(--bad)}
+
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:15px 6px;text-align:center}
+  .stat .n{font-size:23px;font-weight:600}
+  .stat .l{font-size:11px;color:var(--sub);margin-top:3px}
+
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:17px;padding:17px;margin-bottom:14px}
+  .ttl{font-weight:600;font-size:15px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+  .ttl .sub{font-size:12px;color:var(--sub);font-weight:400}
+
+  label{font-size:12px;color:var(--sub);display:block;margin-bottom:6px}
+  input,textarea{width:100%;background:var(--input-bg);border:1px solid var(--line);color:var(--txt);border-radius:12px;padding:13px;font-size:16px;outline:none;transition:border-color .2s}
+  textarea{resize:vertical;font-family:ui-monospace,Menlo,monospace;font-size:13px;line-height:1.6}
+  input:focus,textarea:focus{border-color:var(--acc-2)}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+
+  .seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;background:var(--input-bg);border:1px solid var(--line);border-radius:12px;padding:4px}
+  .seg button{border:0;background:transparent;color:var(--sub);border-radius:9px;padding:11px 0;font-size:14px;font-weight:500;cursor:pointer;transition:background .2s,color .2s}
+  .seg button.on{background:var(--acc);color:var(--acc-text)}
+  .seg.two{grid-template-columns:1fr 1fr}
+
+  button.act{width:100%;background:var(--acc);color:var(--acc-text);border:0;border-radius:13px;padding:15px;font-size:16px;font-weight:600;cursor:pointer;margin-top:4px;transition:transform .12s,filter .2s}
+  button.act:hover{filter:brightness(1.05)}
+  button.act.sm{width:auto;padding:11px 18px;font-size:14px}
+  button.ghost{background:transparent;color:var(--txt);border:1px solid var(--line);border-radius:12px;padding:12px;font-size:15px;cursor:pointer;transition:transform .12s,border-color .2s}
+  button.ghost.sm{padding:9px 14px;font-size:13px;width:auto}
+  button.bad{background:var(--bad);color:#1a0000;border:0;border-radius:12px;padding:12px;font-size:15px;font-weight:600;cursor:pointer}
+  button:active{transform:scale(.97)}
+
+  .hint{font-size:12px;color:var(--sub);margin-top:12px;word-break:break-all}
+  .keylist{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+  .krow{display:flex;align-items:center;gap:10px;background:var(--input-bg);border:1px solid var(--line);border-radius:12px;padding:11px 13px}
+  .krow .mono{flex:1;font-family:ui-monospace,Menlo,monospace;font-size:14px;letter-spacing:.5px;word-break:break-all}
+
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:2px}
+  th,td{text-align:left;padding:11px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+  .tablescroll{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .tablescroll>table{min-width:600px}
+  .tablescroll td,.tablescroll th{white-space:nowrap}
+  th{color:var(--sub);font-weight:500;font-size:12px}
+  tr:last-child td{border-bottom:0}
+  .mono{font-family:ui-monospace,Menlo,monospace;font-size:12px;word-break:break-all}
+  .muted{color:var(--sub);font-size:12px}
+  .res{font-size:13px;margin-top:12px;display:flex;flex-direction:column;gap:6px}
+  .res .line{background:var(--input-bg);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+  .res .ok{color:var(--ok)} .res .no{color:var(--bad)}
+
+  .chk{appearance:none;width:22px;height:22px;flex:0 0 auto;border:1.5px solid var(--sub);border-radius:7px;cursor:pointer;position:relative;transition:.18s;background:var(--input-bg)}
+  .chk:checked{background:var(--acc);border-color:var(--acc)}
+  .chk:checked::after{content:"";position:absolute;left:7px;top:3px;width:5px;height:10px;border:solid var(--acc-text);border-width:0 2px 2px 0;transform:rotate(42deg)}
+
+  .tabbar{position:fixed;left:0;right:0;bottom:0;z-index:40;display:flex;justify-content:center;background:var(--tabbg);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+  .tabbar .inner{max-width:560px;width:100%;display:grid;grid-template-columns:repeat(4,1fr)}
+  body.role-user .tabbar .inner{grid-template-columns:repeat(3,1fr)}
+  .tab{background:none;border:0;color:var(--sub);display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 8px;cursor:pointer;font-size:11px;transition:color .2s}
+  .tab svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  .tab.on{color:var(--acc-2)}
+
+  #batchbar{position:fixed;left:0;right:0;bottom:0;z-index:50;display:flex;justify-content:center;transform:translateY(140%);transition:transform .32s cubic-bezier(.2,.8,.2,1);padding-bottom:env(safe-area-inset-bottom)}
+  #batchbar.show{transform:translateY(0)}
+  #batchbar .inner{max-width:560px;width:100%;margin:0 12px;background:var(--panel);border:1px solid var(--line);border-radius:16px 16px 0 0;padding:12px 14px;display:flex;align-items:center;gap:12px;box-shadow:0 -10px 40px rgba(0,0,0,.4)}
+  #batchbar .cnt{font-size:13px;color:var(--sub)}
+  #batchbar .cnt b{color:var(--txt);font-size:15px}
+  #batchbar .acts{margin-left:auto;display:flex;gap:10px}
+  #batchbar button.ghost,#batchbar button.bad{padding:11px 16px;font-size:14px;margin:0}
+
+  .mask{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;padding:24px;z-index:60;animation:fade .2s ease}
+  .mask.show{display:flex}
+  .modal{width:100%;max-width:320px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px}
+  .modal .mt{font-size:16px;font-weight:600;margin-bottom:8px}
+  .modal .md{font-size:13px;color:var(--sub);word-break:break-all;margin-bottom:18px}
+  .modal .mb{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+  .annmodal{width:100%;max-width:340px;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:24px 22px;text-align:center;box-shadow:0 24px 70px rgba(0,0,0,.55)}
+  .annmodal .at{font-size:17px;font-weight:700;margin-bottom:14px;letter-spacing:.5px}
+  .annmodal .ab{font-size:14px;color:var(--txt);line-height:1.7;word-break:break-all;max-height:50vh;overflow:auto;white-space:pre-wrap;text-align:left}
+  .annmodal .ab.empty{color:var(--sub);text-align:center}
+  .annmodal textarea{margin-top:6px;text-align:left}
+  .annmodal .aa{display:flex;gap:10px;margin-top:20px}
+  .annmodal .aa button{flex:1;margin-top:0}
+  .ann-note{font-size:11px;color:var(--sub);margin-top:8px}
+
+  /* 主题切换卡片 */
+  .theme-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .theme-opt{cursor:pointer;border:1.5px solid var(--line);border-radius:14px;padding:14px 12px;display:flex;flex-direction:column;align-items:center;gap:8px;transition:border-color .2s}
+  .theme-opt.on{border-color:var(--acc)}
+  .theme-opt .sw{width:100%;height:30px;border-radius:8px}
+  .theme-opt .sw.dark{background:linear-gradient(135deg,#0e0f13 0%,#3a3d47 100%)}
+  .theme-opt .sw.blue{background:linear-gradient(135deg,#0b1220 0%,#2b4d8f 100%)}
+  .theme-opt .sw.light{background:linear-gradient(135deg,#f2f3f5 0%,#d8dce2 100%)}
+  .theme-opt .sw.gold{background:linear-gradient(135deg,#f6f2e9 0%,#c3a15c 100%)}
+  .theme-opt .nm{font-size:13px;font-weight:500}
+  .theme-opt .ds{font-size:11px;color:var(--sub)}
+
+  /* 商务金专属：细腻描边 + 柔和层次（静态渲染） */
+  [data-theme="gold"] body{background:#f0ebdf}
+  [data-theme="gold"] .card,
+  [data-theme="gold"] .stat,
+  [data-theme="gold"] .login-card,
+  [data-theme="gold"] .modal,
+  [data-theme="gold"] .annmodal{
+    background:#faf6ec;
+    border:1px solid rgba(150,120,70,.22);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.8), 0 6px 20px rgba(120,90,40,.05);
+  }
+  [data-theme="gold"] button.act,
+  [data-theme="gold"] .login-card button,
+  [data-theme="gold"] .seg button.on{
+    background:linear-gradient(180deg,#96783c 0%,#7d6430 100%);
+    color:#fff;
+    border:1px solid rgba(255,255,255,.16);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.22);
+  }
+  [data-theme="gold"] .splash-bar > i{background:linear-gradient(90deg,#a9884a,#6f5628)}
+
+  /* ===== 滑动指示条（底部选项卡 / 分段控件，极简：0.25s 平移，无动画） ===== */
+  .tabbar .inner{position:relative;overflow:hidden}
+  .tab-ind{position:absolute;left:0;top:6px;bottom:6px;width:0;border-radius:13px;background:var(--gem);opacity:.25;z-index:0;transition:transform .25s ease,width .25s ease;pointer-events:none}
+  .tab{position:relative;z-index:1}
+  .seg{position:relative;overflow:hidden}
+  .seg-ind{position:absolute;left:0;top:4px;bottom:4px;width:0;border-radius:9px;background:var(--gem);z-index:0;transition:transform .25s ease,width .25s ease;pointer-events:none}
+  .seg button{position:relative;z-index:1;transition:color .2s ease}
+  .seg button.on{background:transparent;color:var(--acc-text)}
+  [data-theme="dark"] .seg button.on,[data-theme="gold"] .seg button.on{background:transparent}
+  [data-theme="gold"] .tab-ind,[data-theme="gold"] .seg-ind{background:#a8843c;opacity:.22}
+  /* 版本卡片 */
+  .ver-row{display:flex;gap:22px;margin:8px 0 12px}
+  .ver-row > div{flex:1}
+  .ver-k{display:block;font-size:12px;color:var(--sub);margin-bottom:2px}
+  .ver-row b{font-size:20px;font-weight:700}
+  .keep-inline{display:inline-flex;align-items:center;gap:6px;margin-top:4px;flex-wrap:wrap}
+  .keep-inline input{width:64px;display:inline-block;padding:8px 10px}
+
+  /* 角色显隐：普通用户隐藏管理员专属 */
+  body.role-user .admin-only{display:none !important}
+  body.role-user .user-only{display:block !important}
+
+  /* ===== 更多页：可折叠分类（整理杂乱功能）===== */
+  .acc{background:var(--panel);border:1px solid var(--line);border-radius:15px;margin-bottom:14px;overflow:hidden}
+  .acc-h{display:flex;align-items:center;justify-content:space-between;padding:15px 16px;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;user-select:none}
+  .acc-h .at{font-size:15px;font-weight:600;display:flex;align-items:center;gap:9px}
+  .acc-h .chev{color:var(--sub);transition:transform .3s var(--ease);font-size:15px;line-height:1}
+  .acc.open .acc-h .chev{transform:rotate(180deg)}
+  .acc-b{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s var(--ease)}
+  .acc.open .acc-b{grid-template-rows:1fr}
+  .acc-b>.acc-inner{overflow:hidden;min-height:0}
+  .acc-inner .card{margin:0 12px 12px;border-radius:11px;animation:none}
+  .acc-inner .card:first-child{margin-top:12px}
+  /* 公告实时推送预览弹框（管理员查看用户端效果，可关闭） */
+  #pushAnn-mask{position:fixed;inset:0;z-index:520;display:none;align-items:center;justify-content:center;background:rgba(2,3,8,.6);animation:fade .2s ease}
+  #pushAnn-box{width:min(90vw,420px);background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+  #pushAnn-box .am-h{display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px;margin-bottom:12px}
+  #pushAnn-box .am-x{margin-left:auto;background:none;border:none;color:var(--sub);font-size:24px;line-height:1;cursor:pointer;padding:0 4px}
+  #pushAnn-box .am-b{white-space:pre-wrap;line-height:1.65;color:var(--txt);font-size:14px;max-height:52vh;overflow:auto}
+  #pushAnn-box .am-f{margin-top:16px;text-align:right}
+
+  /* 注入实时状态条（管理员首页顶部） */
+  .inj-live{display:flex;align-items:center;gap:10px;border-radius:14px;padding:11px 14px;margin-bottom:14px;border:1px solid var(--line);background:var(--panel)}
+  .inj-live .ic{font-size:18px;flex:0 0 auto}
+  .inj-live .tx{min-width:0;flex:1}
+  .inj-live .tx b{display:block;font-size:13px;font-weight:600}
+  .inj-live .tx span{display:block;font-size:11px;color:var(--sub);margin-top:1px;word-break:break-all}
+  .inj-live.idle{border-color:rgba(63,166,122,.5)}
+  .inj-live.idle .tx b{color:var(--ok)}
+  .inj-live.busy{border-color:rgba(207,149,46,.55);background:rgba(207,149,46,.08)}
+  .inj-live.busy .tx b{color:var(--warn)}
+  .inj-live.off{border-color:rgba(255,93,93,.5)}
+  .inj-live.off .tx b{color:var(--bad)}
+
+  /* 卡密搜索框 */
+  .list-tools{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+  .list-tools input[type=text]{flex:1;min-width:120px}
+/* —— 去 AI 味：统一线性图标 + 排版打磨 —— */
+svg.ico{width:1em;height:1em;flex:0 0 auto;vertical-align:-0.15em;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.acc-h .at svg.ico{vertical-align:-0.12em}
+button.act svg.ico,button.ghost svg.ico,button.btn svg.ico{margin-right:6px;vertical-align:-0.12em}
+header.top h1 svg.ico{margin-right:8px}
+button.act,button.ghost,button.btn.primary{transition:transform .15s var(--ease),box-shadow .15s var(--ease),filter .15s var(--ease)}
+button.act:hover,button.ghost:hover,button.btn.primary:hover{transform:translateY(-1px);filter:brightness(1.05)}
+
+/* ===== 开屏：单色描边自绘 + 呼吸环 + 纤细滑动进度线（去彩虹 AI 味） ===== */
+#splash{background:var(--splash-bg)}
+.splash-mark{width:104px;height:104px;animation:markIn .4s ease both}
+.splash-mark svg{width:74px;height:74px;fill:none;stroke:var(--acc);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.emblem-shield{stroke-dasharray:140;stroke-dashoffset:140;animation:drawIn 1s cubic-bezier(.65,.05,.36,1) forwards}
+.emblem-check{stroke-dasharray:44;stroke-dashoffset:44;animation:drawIn .5s .6s cubic-bezier(.65,.05,.36,1) forwards}
+#splash .splash-ring{display:block;position:absolute;inset:0;margin:auto;width:96px;height:96px;border-radius:50%;border:1.5px solid var(--acc);opacity:0;animation:ringPulse 2.6s var(--ease) infinite}
+#splash .splash-ring.r2{animation-delay:1.3s}
+@keyframes drawIn{to{stroke-dashoffset:0}}
+@keyframes ringPulse{0%{transform:scale(.5);opacity:.5}70%{transform:scale(1.12);opacity:0}100%{opacity:0}}
+.splash-title{opacity:0;transform:translateY(10px);animation:fadeUpS .55s .55s var(--ease) forwards;letter-spacing:4px}
+.splash-sub{opacity:0;transform:translateY(8px);animation:fadeUpS .55s .72s var(--ease) forwards;letter-spacing:2px}
+@keyframes fadeUpS{to{opacity:1;transform:none}}
+#splash .splash-bar{width:132px;height:2px;border-radius:2px;background:var(--line);overflow:hidden;margin-top:6px}
+#splash .splash-bar > i{width:38%;height:100%;background:var(--acc);border-radius:2px;transform:none;animation:slideX 1.25s var(--ease) infinite}
+@keyframes slideX{0%{transform:translateX(-120%)}100%{transform:translateX(340%)}}
+
+/* ===== 按钮体系：主按钮（实色+微光晕+抬升）、幽灵按钮、登录/绑定按钮 ===== */
+body[data-theme] button.act{background:var(--acc);color:var(--acc-text);border:0;border-radius:14px;padding:15px;font-size:16px;font-weight:600;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 10px 24px -12px var(--acc);transition:transform .14s var(--ease),box-shadow .2s var(--ease),filter .2s var(--ease)}
+body[data-theme] button.act:hover{transform:translateY(-1px);filter:brightness(1.06);box-shadow:inset 0 1px 0 rgba(255,255,255,.12),0 14px 30px -14px var(--acc)}
+body[data-theme] button.act:active{transform:translateY(0) scale(.985);filter:brightness(.96)}
+button.act:focus-visible,button.ghost:focus-visible,button.btn:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+body[data-theme] button.ghost{background:transparent;color:var(--txt);border:1px solid var(--line);border-radius:12px;padding:12px;font-size:15px;cursor:pointer;transition:border-color .18s var(--ease),background .18s var(--ease),color .18s var(--ease),transform .14s var(--ease)}
+body[data-theme] button.ghost:hover{background:var(--panel2);border-color:var(--acc);color:var(--acc)}
+body[data-theme] button.ghost:active{transform:scale(.98)}
+body[data-theme] .login-card button{background:var(--acc);color:var(--acc-text);border:0;border-radius:14px;padding:15px;font-size:16px;font-weight:600;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 12px 28px -14px var(--acc);transition:transform .14s var(--ease),filter .2s var(--ease),box-shadow .2s var(--ease)}
+body[data-theme] .login-card button:hover{transform:translateY(-1px);filter:brightness(1.06)}
+body[data-theme] .login-card button:active{transform:scale(.985)}
+body[data-theme] .btn.primary{background:var(--acc);color:var(--acc-text);border:0;border-radius:12px;padding:12px 18px;font-size:15px;font-weight:600;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 8px 20px -10px var(--acc);transition:transform .14s var(--ease),filter .2s var(--ease),box-shadow .2s var(--ease)}
+body[data-theme] .btn.primary:hover{transform:translateY(-1px);filter:brightness(1.06)}
+body[data-theme] .btn.primary:active{transform:scale(.98)}
+
+/* ===== 输入框：聚焦描边 + 主题化柔光环 ===== */
+[data-theme="dark"]{--focus:rgba(200,202,210,.20)}
+[data-theme="blue"]{--focus:rgba(126,166,212,.22)}
+[data-theme="light"]{--focus:rgba(63,108,176,.15)}
+[data-theme="gold"]{--focus:rgba(138,109,52,.18)}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--acc);box-shadow:0 0 0 3px var(--focus)}
+
+/* ===== 分段控件：滑块改实色 + 按压反馈 ===== */
+.seg-ind{background:var(--acc);transition:transform .28s cubic-bezier(.34,1.2,.4,1),width .28s cubic-bezier(.34,1.2,.4,1)}
+.seg button{transition:background .2s var(--ease),color .2s var(--ease),transform .12s var(--ease)}
+.seg button:active{transform:scale(.95)}
+
+/* ===== 页面/弹层过渡：上浮+微缩放，更"成型" ===== */
+.screen.active{animation:screenIn .5s var(--ease-out)}
+@keyframes screenIn{from{opacity:0;transform:translateX(42px)}to{opacity:1;transform:none}}
+.screen.leaving{display:block !important;animation:screenOut .26s var(--ease-out) forwards}
+@keyframes screenOut{to{opacity:0;transform:translateX(-42px)}}
+/* tab 图标点击弹跳（iOS bounce） */
+.tab.on svg{animation:tabBounce .5s var(--ease-out)}
+@keyframes tabBounce{0%{transform:scale(1)}40%{transform:scale(1.28) translateY(-4px)}100%{transform:scale(1) translateY(0)}}
+#login.show,.modal.show,.annmodal.show,.ann.show{animation:modalIn .26s var(--ease)}
+@keyframes modalIn{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+
+/* ===== 折叠面板内容淡入 + 卡片微交互 ===== */
+.acc.open .acc-b>.acc-inner{animation:accIn .3s var(--ease)}
+@keyframes accIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:none}}
+.stat{transition:transform .18s var(--ease),border-color .2s var(--ease),box-shadow .2s var(--ease)}
+.stat:hover{transform:translateY(-2px);border-color:var(--acc)}
+.krow{transition:transform .16s var(--ease),border-color .2s var(--ease),background .2s var(--ease)}
+.krow:hover{border-color:var(--acc);background:var(--panel2)}
+.krow:active{transform:scale(.985)}
+
+/* ===== 底部 Tab：图标按钮按压 + 指示条平滑 ===== */
+.tab{transition:color .2s var(--ease),transform .14s var(--ease)}
+.tab:active{transform:scale(.92)}
+.tab-ind{transition:left .3s cubic-bezier(.34,1.2,.4,1),width .3s cubic-bezier(.34,1.2,.4,1),background-color .2s var(--ease);border-radius:999px}
+
+/* ===== 细滚动条（主题自适应） ===== */
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}
+::-webkit-scrollbar-thumb:hover{background:var(--sub)}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ========== 玻璃质感覆盖层 v6（参照截图：白底+半透明+底部真浮玻璃） ========== */
+:root{--ease-out:cubic-bezier(.16,1,.3,1);--ease-spring:cubic-bezier(.16,1,.3,1);--glass-blur:0px}
+[data-theme="dark"]{--glass-panel:rgba(18,19,26,.35);--glass-strong:rgba(22,24,32,.48);--glass-line:rgba(255,255,255,.10);--glow-a:rgba(126,116,255,.32);--glow-b:rgba(60,170,255,.22);--glow-c:rgba(255,110,170,.20);--glass-tab:rgba(22,24,32,.42)}
+[data-theme="light"]{--glass-panel:rgba(255,255,255,.48);--glass-strong:rgba(255,255,255,.68);--glass-line:rgba(255,255,255,.60);--glow-a:rgba(186,158,255,.42);--glow-b:rgba(255,196,168,.34);--glow-c:rgba(150,220,210,.32);--glass-tab:rgba(255,255,255,.55)}
+[data-theme="blue"]{--glass-panel:rgba(22,30,46,.36);--glass-strong:rgba(24,34,54,.50);--glass-line:rgba(190,210,240,.14);--glow-a:rgba(96,160,255,.34);--glow-b:rgba(120,200,255,.24);--glow-c:rgba(140,110,255,.22);--glass-tab:rgba(22,30,46,.40)}
+[data-theme="gold"]{--glass-panel:rgba(255,250,240,.46);--glass-strong:rgba(255,252,246,.65);--glass-line:rgba(255,255,255,.55);--glow-a:rgba(224,178,96,.34);--glow-b:rgba(236,150,90,.24);--glow-c:rgba(255,210,140,.28);--glass-tab:rgba(255,250,240,.50)}
+body{
+  background:var(--bg) !important;
+  transition:background .5s ease;
+}
+/* 面板玻璃（真透明 + 强模糊 + 白色高光） */
+.card,.stat,.modal,.annmodal,.login-card,.sheet,.drow,.toast,.msg{
+  background:var(--glass-panel) !important;
+  -webkit-backdrop-filter:blur(var(--glass-blur)) saturate(170%) !important;
+  backdrop-filter:blur(var(--glass-blur)) saturate(170%) !important;
+  border:1px solid var(--glass-line) !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 14px 40px -22px rgba(0,0,0,.40) !important;
+  transition:transform .3s var(--ease-out),box-shadow .35s ease,background .4s ease,border-color .3s ease !important;
+}
+.modal,.annmodal{background:var(--glass-strong)!important;animation:modIn .34s var(--ease-out) both}
+@keyframes modIn{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+/* 列表行：轻背景 + hover 浮起玻璃 */
+.krow{
+  background:var(--panel) !important;
+  border:1px solid transparent !important;
+  animation:riseIn .45s var(--ease-out) backwards;
+  transition:transform .3s var(--ease-out),box-shadow .35s ease,background .3s ease,border-color .3s ease !important;
+}
+.krow:hover{
+  background:var(--glass-panel) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(160%) !important;
+  backdrop-filter:blur(18px) saturate(160%) !important;
+  border-color:var(--glass-line) !important;
+  transform:translateY(-1px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10),0 18px 44px -24px rgba(0,0,0,.5) !important;
+}
+.krow:nth-child(2){animation-delay:.04s}.krow:nth-child(3){animation-delay:.08s}
+.krow:nth-child(4){animation-delay:.12s}.krow:nth-child(5){animation-delay:.16s}
+.krow:nth-child(6){animation-delay:.20s}.krow:nth-child(7){animation-delay:.24s}
+.krow:nth-child(8){animation-delay:.28s}.krow:nth-child(9){animation-delay:.32s}
+.krow:nth-child(10){animation-delay:.36s}.krow:nth-child(11){animation-delay:.40s}
+.krow:nth-child(12){animation-delay:.44s}
+@keyframes riseIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+/* 按钮：丝滑按压反馈（指数缓动，不弹跳） */
+button.act,button.ghost,.btn.primary,.login-card button,.tab,.seg button,.ghost.sm{
+  transition:transform .22s var(--ease-out),filter .2s ease,box-shadow .25s ease,border-color .2s ease,background .2s ease !important;
+}
+button.act:active,button.ghost:active,.btn.primary:active,.login-card button:active,.ghost.sm:active{transform:scale(.97)!important}
+/* 输入框聚焦柔光 */
+input,select,textarea{transition:border-color .25s ease,box-shadow .25s ease,background .25s ease !important}
+/* 折叠面板 / 分段控件滑块：丝滑 */
+.acc-body{transition:max-height .4s var(--ease-out),opacity .3s ease !important}
+.seg-ind,.tab-ind{transition:left .3s var(--ease-out),width .3s var(--ease-out),transform .2s var(--ease-out) !important}
+
+/* ========== 底部悬浮玻璃导航 v4（深色液态：去反光条 + 图标锐化，2026-08-14） ========== */
+.tabbar{
+  background:transparent !important;
+  border-top:0 !important;
+  padding:0 14px calc(14px + env(safe-area-inset-bottom)) !important;
+  pointer-events:none;
+}
+.tabbar .inner{
+  pointer-events:auto;
+  position:relative;
+  overflow:visible !important;
+  max-width:560px;width:100%;
+  padding:6px;
+  border-radius:24px;
+  background:rgba(18,20,28,.62) !important;
+  -webkit-backdrop-filter:blur(18px) saturate(150%) !important;
+  backdrop-filter:blur(18px) saturate(150%) !important;
+  border:1px solid rgba(255,255,255,.08) !important;
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,.18),
+    inset 0 -2px 4px rgba(0,0,0,.28),
+    0 24px 64px -20px rgba(0,0,0,.6),
+    0 2px 8px rgba(0,0,0,.2) !important;
+}
+body.role-user .tabbar .inner{grid-template-columns:repeat(3,1fr)}
+/* 选中指示条：磨砂浮标（细高光 + 底部厚度） */
+.tab-ind{
+  z-index:1 !important;
+  border-radius:18px !important;
+  background:rgba(255,255,255,.10) !important;
+  opacity:1 !important;
+  box-shadow:
+    inset 0 1px 1px rgba(255,255,255,.25),
+    inset 0 -2px 5px rgba(0,0,0,.2),
+    0 12px 28px -14px rgba(0,0,0,.5) !important;
+  transition:left .55s cubic-bezier(.3,1.35,.4,1),width .55s cubic-bezier(.3,1.35,.4,1) !important;
+}
+/* tab 图标：偶数尺寸 + 加粗 + 锐化（之前 23px 奇数像素发虚） */
+.tab{z-index:2 !important;color:rgba(255,255,255,.62)}
+.tab svg{width:22px;height:22px;stroke-width:1.8;shape-rendering:geometricPrecision}
+.tab.on{color:#fff}
+.tab.on svg{filter:drop-shadow(0 3px 8px rgba(255,255,255,.22))}
+/* 点击水波涟漪 */
+.tab{overflow:hidden}
+.tab::after{
+  content:"";position:absolute;left:50%;top:50%;width:140%;aspect-ratio:1;border-radius:50%;
+  transform:translate(-50%,-50%) scale(0);opacity:.4;
+  background:radial-gradient(circle,rgba(255,255,255,.40),transparent 62%);
+  pointer-events:none;
+}
+.tab.on::after{animation:ripple .6s var(--ease-out) both}
+@keyframes ripple{from{transform:translate(-50%,-50%) scale(0);opacity:.4}to{transform:translate(-50%,-50%) scale(1.7);opacity:0}}
+@media (prefers-reduced-motion: reduce){.tab.on::after{animation:none}}
+
+/* ========== 交互微动效（2026-08-14 用户：所有东西动一下，更苹果） ========== */
+.stat{transition:transform .32s var(--ease-out),box-shadow .35s ease !important}
+.stat:hover{transform:translateY(-3px)}
+.acc-h{transition:transform .32s var(--ease-out) !important}
+.acc-h:hover{transform:translateX(4px)}
+.banner{transition:transform .32s var(--ease-out) !important}
+.banner:hover{transform:translateY(-2px)}
+/* 图标微动：hover 时图标活泼一点 */
+.krow .ico,.card .ico,.stat svg{transition:transform .32s var(--ease-out) !important}
+.krow:hover .ico,.card:hover .ico,.stat:hover svg{transform:scale(1.18) rotate(-5deg)}
+/* 主按钮流光扫过 */
+button.act,.btn.primary,.login-card button{position:relative;overflow:hidden}
+button.act::after,.btn.primary::after,.login-card button::after{
+  content:"";position:absolute;top:0;left:-60%;width:45%;height:100%;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);
+  transform:skewX(-18deg);pointer-events:none;
+}
+button.act:hover::after,.btn.primary:hover::after,.login-card button:hover::after{animation:sheen .8s var(--ease-out)}
+@keyframes sheen{from{left:-60%}to{left:130%}}
+/* 数字跳动 */
+.stat .num,.stat b{transition:transform .22s var(--ease-out)}
+@media (prefers-reduced-motion: reduce){.stat,.acc-h,.banner,.krow .ico{transition:none!important}}
+
+/* ========== 平台介绍弹窗 v2（大牌感：遮罩模糊 + 能量层 + 微交互，2026-08-14） ========== */
+#intro-mask{background:rgba(8,10,20,.34)!important;-webkit-backdrop-filter:blur(10px) saturate(140%)!important;backdrop-filter:blur(10px) saturate(140%)!important}
+.intro-modal{
+  width:100%;max-width:600px;max-height:88vh;overflow:auto;
+  position:relative;
+  background:linear-gradient(180deg,var(--glass-strong),var(--glass-panel))!important;
+  -webkit-backdrop-filter:blur(28px) saturate(180%)!important;
+  backdrop-filter:blur(28px) saturate(180%)!important;
+  border:1px solid var(--glass-line)!important;
+  border-radius:28px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.22),
+    inset 0 0 0 .5px rgba(255,255,255,.07),
+    0 4px 12px rgba(0,0,0,.10),
+    0 24px 64px -18px rgba(0,0,0,.45)!important;
+  padding:34px 28px 28px;
+  animation:modIn .42s var(--ease-out) both;
+}
+/* 顶部能量光层：玻璃底下要有可折射的光（克制，一大团品牌光，非彩虹） */
+.intro-modal::before{
+  content:"";position:absolute;top:-130px;left:50%;transform:translateX(-50%);
+  width:560px;height:320px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(closest-side,rgba(96,150,255,.30),rgba(130,110,255,.14),transparent 72%);
+  filter:blur(4px);
+}
+.intro-modal>*{position:relative;z-index:1}
+.intro-x{position:absolute;top:14px;right:16px;width:32px;height:32px;border-radius:50%;border:1px solid var(--glass-line);background:var(--glass-panel);color:var(--sub);font-size:19px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:transform .22s var(--ease-out),background .2s,color .2s;z-index:5}
+.intro-x:hover{transform:rotate(90deg) scale(1.08);background:var(--glass-strong);color:var(--txt)}
+.intro-hero{text-align:center;padding:8px 0 2px;animation:riseIn .55s var(--ease-out) both}
+.intro-badge{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;letter-spacing:.5px;color:var(--acc-2);background:var(--glass-panel);border:1px solid var(--glass-line);padding:6px 14px;border-radius:999px;margin-bottom:16px;box-shadow:0 8px 24px -12px var(--acc-2)}
+.intro-badge .ico{width:14px;height:14px}
+.intro-hero h2{font-size:clamp(22px,5vw,30px);font-weight:900;line-height:1.32;letter-spacing:.2px;margin:0 0 10px;background:linear-gradient(115deg,var(--acc-2) 10%,var(--acc) 90%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.intro-hero p{font-size:13px;font-weight:400;color:var(--sub);line-height:1.85;margin:0 0 20px}
+.intro-stats{display:flex;justify-content:center;gap:12px;animation:riseIn .55s var(--ease-out) .1s both}
+.intro-stats .st{flex:0 0 auto;min-width:104px;background:var(--glass-panel);border:1px solid var(--glass-line);border-radius:18px;padding:14px 8px;text-align:center;position:relative;overflow:hidden;transition:transform .32s var(--ease-out),box-shadow .32s,border-color .3s}
+.intro-stats .st::before{content:"";position:absolute;inset:0;background:radial-gradient(90px 44px at 50% 0%,var(--acc-2),transparent 72%);opacity:.15;pointer-events:none}
+.intro-stats .st:hover{transform:translateY(-4px);border-color:rgba(96,150,255,.45);box-shadow:0 16px 34px -16px rgba(0,0,0,.45)}
+.intro-stats .st b{display:block;font-size:23px;font-weight:800;color:var(--acc-2);line-height:1.2;font-variant-numeric:tabular-nums}
+.intro-stats .st span{font-size:11px;color:var(--sub);letter-spacing:.3px}
+.intro-tabs{display:flex;gap:4px;margin:24px 0 18px;padding:5px;background:var(--glass-panel);border:1px solid var(--glass-line);border-radius:14px}
+.intro-tabs .it{flex:1;text-align:center;font-size:13px;font-weight:600;color:var(--sub);padding:9px 0;border-radius:10px;cursor:pointer;transition:color .25s,transform .18s var(--ease-out);position:relative;z-index:1}
+.intro-tabs .it:hover{color:var(--txt)}
+.intro-tabs .it.on{color:var(--acc-text)}
+.intro-tabs .it.on::before{content:"";position:absolute;inset:0;border-radius:10px;background:linear-gradient(135deg,var(--acc-2),var(--acc));z-index:-1;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 10px 24px -10px var(--acc);animation:popIn .32s var(--ease-out) both}
+@keyframes popIn{from{transform:scale(.86);opacity:.4}to{transform:scale(1);opacity:1}}
+.intro-pane{display:none}
+.intro-pane.on{display:block;animation:riseIn .35s var(--ease-out) both}
+/* 特性网格：hover 鼠标跟随光斑（Linear/Vercel 手法） */
+.intro-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.intro-grid .ig{
+  position:relative;overflow:hidden;display:flex;gap:12px;align-items:flex-start;
+  background:var(--glass-panel);border:1px solid var(--glass-line);border-radius:18px;padding:15px;
+  transition:transform .32s var(--ease-out),box-shadow .35s,border-color .3s;
+  animation:riseIn .42s var(--ease-out) backwards;
+}
+.intro-grid .ig:nth-child(2){animation-delay:.05s}.intro-grid .ig:nth-child(3){animation-delay:.1s}
+.intro-grid .ig:nth-child(4){animation-delay:.15s}.intro-grid .ig:nth-child(5){animation-delay:.2s}
+.intro-grid .ig:nth-child(6){animation-delay:.25s}
+.intro-grid .ig::after{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:0;
+  background:radial-gradient(230px 150px at var(--mx,50%) var(--my,50%),rgba(96,150,255,.12),transparent 65%);
+  transition:opacity .3s;
+}
+.intro-grid .ig:hover{transform:translateY(-3px);border-color:rgba(96,150,255,.5);box-shadow:0 18px 42px -18px rgba(0,0,0,.5)}
+.intro-grid .ig:hover::after{opacity:1}
+.intro-grid .ig-ic{flex:0 0 auto;width:36px;height:36px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--acc-2),var(--acc));color:#fff;box-shadow:0 10px 22px -10px var(--acc);transition:transform .32s var(--ease-out)}
+.intro-grid .ig:hover .ig-ic{transform:scale(1.12) rotate(-5deg)}
+.intro-grid .ig-ic .ico{width:18px;height:18px}
+.intro-grid .ig b{font-size:14px;font-weight:700;display:block;margin-bottom:3px}
+.intro-grid .ig p{font-size:12px;color:var(--sub);line-height:1.65;margin:0}
+/* 使用流程：渐变连线 + 交错浮现 */
+.intro-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;position:relative}
+.intro-steps::before{content:"";position:absolute;top:27px;left:12%;right:12%;height:2px;background:linear-gradient(90deg,var(--acc-2),var(--acc));opacity:.4;border-radius:2px}
+.intro-steps .is{position:relative;text-align:center;background:var(--glass-panel);border:1px solid var(--glass-line);border-radius:18px;padding:20px 10px 14px;transition:transform .32s var(--ease-out),border-color .3s,box-shadow .32s;animation:riseIn .45s var(--ease-out) backwards}
+.intro-steps .is:nth-child(2){animation-delay:.07s}.intro-steps .is:nth-child(3){animation-delay:.14s}.intro-steps .is:nth-child(4){animation-delay:.21s}
+.intro-steps .is:hover{transform:translateY(-4px);border-color:rgba(96,150,255,.5);box-shadow:0 16px 36px -16px rgba(0,0,0,.5)}
+.intro-steps .is-n{position:absolute;top:-10px;left:50%;transform:translateX(-50%);width:21px;height:21px;border-radius:50%;background:linear-gradient(135deg,var(--acc-2),var(--acc));color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px -3px var(--acc)}
+.intro-steps .is-ic{width:40px;height:40px;margin:0 auto 9px;border-radius:13px;display:flex;align-items:center;justify-content:center;background:var(--glass-panel);border:1px solid var(--glass-line);color:var(--acc-2);transition:transform .32s var(--ease-out),background .3s}
+.intro-steps .is:hover .is-ic{transform:scale(1.12) rotate(-4deg);background:var(--glass-strong)}
+.intro-steps .is-ic .ico{width:19px;height:19px}
+.intro-steps .is b{font-size:13px;font-weight:700;display:block;margin-bottom:4px}
+.intro-steps .is p{font-size:11px;color:var(--sub);line-height:1.55;margin:0;padding:0 4px}
+.intro-tip{display:flex;align-items:center;gap:8px;margin-top:14px;padding:11px 14px;border-radius:14px;background:rgba(230,162,60,.10);border:1px solid rgba(230,162,60,.28);color:#e6a23c;font-size:12px;line-height:1.6}
+.intro-tip .ico{width:15px;height:15px;flex:0 0 auto}
+/* 联系卡：旋转光环头像 + 磁吸按钮 */
+.intro-contact{text-align:center;padding:10px 0 2px;animation:riseIn .4s var(--ease-out) both}
+.qq-ava{position:relative;width:66px;height:66px;margin:0 auto 12px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#33a6ff,#0e7ae6);color:#fff;box-shadow:0 16px 34px -12px rgba(14,122,230,.55)}
+.qq-ava::before{content:"";position:absolute;inset:-4px;border-radius:50%;border:1.5px solid rgba(51,166,255,.55);border-top-color:transparent;border-right-color:transparent;animation:ringspin 3s linear infinite}
+.qq-ava::after{content:"";position:absolute;inset:-9px;border-radius:50%;border:1px solid rgba(51,166,255,.18);border-bottom-color:transparent;animation:ringspin 4.6s linear infinite reverse}
+@keyframes ringspin{to{transform:rotate(360deg)}}
+.qq-ava .ico{width:30px;height:30px}
+.qq-t{font-size:14px;font-weight:700;margin-bottom:6px}
+.qq-num{font-size:clamp(24px,6vw,30px);font-weight:900;letter-spacing:2px;background:linear-gradient(120deg,var(--acc-2),var(--acc));-webkit-background-clip:text;background-clip:text;color:transparent;margin-bottom:16px;font-variant-numeric:tabular-nums}
+.qq-actions{display:flex;justify-content:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.qq-btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:12px 22px;border-radius:14px;font-size:13.5px;font-weight:700;cursor:pointer;border:1px solid var(--glass-line);background:var(--glass-panel);color:var(--txt);text-decoration:none;transition:transform .25s var(--ease-out),box-shadow .3s,filter .2s}
+.qq-btn:hover{transform:translateY(-2px) scale(1.02);box-shadow:0 14px 30px -12px rgba(0,0,0,.5)}
+.qq-btn:active{transform:scale(.96)}
+.qq-btn.primary{background:linear-gradient(135deg,var(--acc-2),var(--acc));color:#fff;border:0;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 14px 30px -12px var(--acc)}
+.qq-btn .ico{width:15px;height:15px}
+.qq-note{font-size:12px;color:var(--sub);line-height:1.7;max-width:400px;margin:0 auto 12px}
+.qq-time{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;color:var(--sub);background:var(--glass-panel);border:1px solid var(--glass-line);border-radius:999px;padding:7px 14px}
+.qq-time .ico{width:13px;height:13px}
+@media (max-width:520px){.intro-grid{grid-template-columns:1fr}.intro-steps{grid-template-columns:repeat(2,1fr)}.intro-steps::before{display:none}.intro-modal{padding:26px 18px 20px}}
+</style>
+</head>
+<body>
+
+<!-- 开屏 -->
+<div id="splash">
+  <div class="splash-mark">
+    <span class="splash-ring"></span>
+    <span class="splash-ring r2"></span>
+    <svg viewBox="0 0 24 24" class="splash-emblem" aria-hidden="true">
+      <path class="emblem-shield" d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/>
+      <path class="emblem-check" d="M9 12l2 2 4-4"/>
+    </svg>
+  </div>
+  <div class="splash-title">卡密云系统</div>
+  <div class="splash-sub">安全验证 · 云控管理</div>
+  <div class="splash-bar"><i></i></div>
+</div>
+<script>
+  /* 独立兜底：完全脱离主脚本。无论主脚本是否因异常/语法错误中断，
+     4 秒后强制隐藏开屏并弹出登录框，绝对不会永久卡在加载动画。 */
+  (function(){
+    function forceEnter(){
+      try{
+        var s = document.getElementById('splash');
+        if(s && !s.classList.contains('hide')){ s.classList.add('hide'); }
+        var l = document.getElementById('login');
+        if(l && !l.classList.contains('show')){ l.classList.add('show'); }
+      }catch(_){}
+    }
+    setTimeout(forceEnter, 4000);
+  })();
+</script>
+
+<!-- 登录（管理员 / 普通用户 共用同一界面） -->
+<div id="login">
+  <div class="login-card">
+    <div class="lt">登录</div>
+    <div class="ls">请输入邮箱、邮箱密码与激活密码（卡密）后登录</div>
+    <input id="l-email" type="email" placeholder="邮箱（注册时的邮箱）" autocomplete="off">
+    <input id="l-epwd" type="password" placeholder="邮箱密码（注册密码）" autocomplete="off">
+    <input id="l-pwd" type="password" placeholder="激活密码（卡密）" autocomplete="off">
+    <label style="display:flex;align-items:center;gap:8px;margin:2px 0 14px;font-size:13px;color:var(--sub);cursor:pointer">
+      <input type="checkbox" id="l-remember" checked style="width:16px;height:16px;min-width:16px;padding:0;margin:0;border:none;background:none;flex:0 0 auto;accent-color:var(--acc-2)"> 记录账号（72小时内自动登录，下次免输入）
+    </label>
+    <div class="lerr" id="l-err"></div>
+    <div class="lerr" id="l-storage-warn" style="display:none;color:#e6a23c">⚠️ 当前浏览器无法保存登录信息（可能开启了无痕/隐私模式），关闭后即可记住账号、免重复登录</div>
+    <button id="l-btn">登 录</button>
+    <div style="text-align:center;margin-top:14px;display:flex;justify-content:center;gap:18px;flex-wrap:wrap;align-items:center">
+      <a href="javascript:void(0)" id="l-intro" style="color:var(--acc-2);font-size:13px;font-weight:600;cursor:pointer">没有激活密码？点这里了解</a>
+      <a href="register.html" style="color:var(--sub);font-size:13px">没有账号？注册一个</a>
+    </div>
+    <div id="l-ip" style="text-align:center;font-size:11px;color:var(--sub);opacity:.6;margin-top:12px">正在获取当前访问 IP…</div>
+  </div>
+</div>
+
+<!-- 平台介绍弹窗：没有激活密码？点这里了解 -->
+<div class="mask" id="intro-mask" style="z-index:200">
+  <div class="intro-modal">
+    <button class="intro-x" id="intro-close" aria-label="关闭">×</button>
+
+    <!-- Hero -->
+    <div class="intro-hero">
+      <div class="intro-badge"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-key"/></svg> CardKey 授权平台</div>
+      <h2>专业 · 安全 · 高效的<br>应用授权保护方案</h2>
+      <p>为应用开发者提供从卡密分发、安装保护到版本维护的<br>一站式授权服务，未激活即拦截，已激活即放行。</p>
+      <div class="intro-stats">
+        <div class="st"><b data-count="3">0</b><span>步完成接入</span></div>
+        <div class="st"><b data-count="6">0</b><span>大核心能力</span></div>
+        <div class="st"><b>7×24</b><span>在线服务</span></div>
+      </div>
+    </div>
+
+    <!-- Tab 切换 -->
+    <div class="intro-tabs">
+      <span class="it on" data-it="about">平台介绍</span>
+      <span class="it" data-it="flow">使用流程</span>
+      <span class="it" data-it="contact">联系我们</span>
+    </div>
+
+    <!-- ① 平台介绍 -->
+    <div class="intro-pane on" data-pane="about">
+      <div class="intro-grid">
+        <div class="ig"><div class="ig-ic"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-key"/></svg></div><div><b>卡密管理</b><p>在线生成、批量创建，有效期灵活（永久 / 按天 / 按小时），全生命周期可视化。</p></div></div>
+        <div class="ig"><div class="ig-ic"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-package"/></svg></div><div><b>APK 注入保护</b><p>任意 Android 应用一键注入验证壳，未激活无法进入，验证通过自动拉起原应用。</p></div></div>
+        <div class="ig"><div class="ig-ic"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-refresh"/></svg></div><div><b>OTA 强制更新</b><p>新版本门槛一键抬升，旧包打开自动提示更新；坏包支持后台远程一键修复。</p></div></div>
+        <div class="ig"><div class="ig-ic"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-chart"/></svg></div><div><b>数据看板</b><p>实时统计卡密总数、激活中、已使用，经营状况一目了然。</p></div></div>
+        <div class="ig"><div class="ig-ic"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-lock"/></svg></div><div><b>多重安全</b><p>登录会话保护、IP 免登、卡密绑定账号，从分发到使用全程可追溯。</p></div></div>
+        <div class="ig"><div class="ig-ic"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-users"/></svg></div><div><b>多角色协作</b><p>管理员 / 普通用户分权管理，各自主理自己的卡密与注入产物，互不干扰。</p></div></div>
+      </div>
+    </div>
+
+    <!-- ② 使用流程 -->
+    <div class="intro-pane" data-pane="flow">
+      <div class="intro-steps">
+        <div class="is"><div class="is-n">1</div><div class="is-ic"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-user"/></svg></div><b>注册账号</b><p>填写邮箱完成注册，立即拥有专属管理空间。</p></div>
+        <div class="is"><div class="is-n">2</div><div class="is-ic"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-mail"/></svg></div><b>获取激活密码</b><p>联系平台客服 QQ，获取你的专属激活密码（卡密）。</p></div>
+        <div class="is"><div class="is-n">3</div><div class="is-ic"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-upload"/></svg></div><b>下载安装应用</b><p>下载注入好验证壳的应用安装包，完成安装。</p></div>
+        <div class="is"><div class="is-n">4</div><div class="is-ic"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-key"/></svg></div><b>输入激活</b><p>打开应用输入激活密码，验证通过即刻使用。</p></div>
+      </div>
+      <div class="intro-tip"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-megaphone"/></svg> 温馨提示：激活密码与注册账号绑定，请妥善保管；有效期自首次激活时开始计算。</div>
+    </div>
+
+    <!-- ③ 联系我们 -->
+    <div class="intro-pane" data-pane="contact">
+      <div class="intro-contact">
+        <div class="qq-ava"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-users"/></svg></div>
+        <div class="qq-t">平台客服</div>
+        <div class="qq-num" id="qq-num">2643492766</div>
+        <div class="qq-actions">
+          <button class="qq-btn primary" id="qq-copy"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-clipboard"/></svg> 复制 QQ 号</button>
+          <a class="qq-btn" id="qq-add" href="tencent://message/?uin=2643492766&Site=CardKey&Menu=yes" target="_blank"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-link"/></svg> 点击加好友</a>
+        </div>
+        <div class="qq-note">添加时请注明来意（获取激活密码 / 使用咨询 / 合作），我们会在看到消息后尽快回复。</div>
+        <div class="qq-time"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-activity"/></svg> 服务时间：7×24 小时在线，欢迎随时联系</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tab 1 卡密 -->
+<section class="screen active" id="tab-cards">
+  <div class="app">
+    <header class="top">
+      <h1>卡密管理</h1>
+      <span style="display:flex;align-items:center;gap:12px">
+        <span class="ping" id="ping">延迟<b>--</b></span>
+        <span class="live"><span class="dot"></span>实时</span>
+        <button class="ghost sm" id="ann-open">公告</button>
+      </span>
+    </header>
+
+    <!-- 注入实时状态（仅管理员）：显示当前是否有人在用注入，每 5 秒自动刷新 -->
+    <div class="inj-live admin-only" id="inj-live" style="display:none">
+      <div class="ic"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-rocket"/></svg></div>
+      <div class="tx"><b>注入服务：检测中…</b><span>正在获取状态</span></div>
+    </div>
+
+    <!-- 统计：所有登录用户可见（后端已按 owner 隔离，普通用户看到的是自己生成的统计） -->
+    <div class="stats">
+      <div class="stat"><div class="n" id="s-total">0</div><div class="l">总数</div></div>
+      <div class="stat"><div class="n" id="s-active">0</div><div class="l">激活中</div></div>
+      <div class="stat"><div class="n" id="s-used">0</div><div class="l">已用</div></div>
+    </div>
+
+    <!-- 生成卡密：所有登录用户均可使用 -->
+    <div class="card">
+      <div class="ttl">生成卡密</div>
+      <div class="grid2">
+        <div><label>位数（8–40）</label><input id="g-len" type="number" value="16" min="8" max="40"></div>
+        <div><label>数量（上限 100）</label><input id="g-count" type="number" min="0" max="100" placeholder="填写数量"><div id="g-limit" class="hint" style="text-align:left;margin-top:6px"></div></div>
+      </div>
+      <div class="grid2">
+        <div><label>有效期数值（0=永久）</label><input id="g-val" type="number" min="0" placeholder="0=永久"></div>
+        <div><label>单位</label>
+          <div class="seg" id="g-seg"><span class="seg-ind"></span>
+            <button data-u="day" class="on">天</button>
+            <button data-u="hour">小时</button>
+            <button data-u="forever">永久</button>
+          </div>
+        </div>
+      </div>
+      <button class="act" id="g-btn">生成卡密</button>
+      <div id="g-out" class="hint"></div>
+      <div id="g-list" class="keylist"></div>
+    </div>
+
+    <div class="card">
+      <div class="ttl">卡密列表 <span class="sub">勾选可批量操作</span></div>
+      <div class="list-tools">
+        <input type="text" id="list-search" placeholder="搜索卡密关键字，实时过滤">
+      </div>
+      <div class="seg two" id="list-seg" style="margin-bottom:12px"><span class="seg-ind"></span>
+        <button data-m="active">激活中</button>
+        <button data-m="all" class="on">全部</button>
+      </div>
+      <div class="tablescroll">
+      <table>
+        <thead><tr><th style="width:28px"><input type="checkbox" id="sel-all" title="全选"></th><th colspan="4">卡密详情（状态 · 剩余时间 · 操作）</th></tr></thead>
+        <tbody id="list-body"><tr><td colspan="4" class="muted">加载中…</td></tr></tbody>
+      </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Tab 3 统计（仅管理员） -->
+<section class="screen admin-only" id="tab-stats">
+  <div class="app">
+    <header class="top"><h1>销售统计</h1></header>
+
+    <div class="stats" style="grid-template-columns:repeat(3,1fr)">
+      <div class="stat"><div class="n" id="st-total">-</div><div class="l">卡密总数</div></div>
+      <div class="stat"><div class="n" id="st-active">-</div><div class="l">激活中</div></div>
+      <div class="stat"><div class="n" id="st-unused">-</div><div class="l">未使用</div></div>
+    </div>
+
+    <div class="card">
+      <div class="ttl">近 30 天趋势 <span class="sub">柱状：每日生成 / 激活</span></div>
+      <canvas id="st-chart" style="width:100%;height:180px"></canvas>
+      <div class="hint" id="st-hint"></div>
+    </div>
+
+    <div class="card admin-only">
+      <div class="ttl">到期卡清理 <span class="sub">删除已到期 / 已作废记录</span></div>
+      <div class="hint">一键删除所有"已到期/已销毁/已作废"状态的卡记录（不可恢复，请确认）。</div>
+      <button class="act" id="st-cleanup" style="margin-top:10px"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-trash"/></svg>清理到期与作废卡</button>
+    </div>
+  </div>
+</section>
+
+<!-- Tab 2 工具 -->
+<section class="screen" id="tab-tools">
+  <div class="app">
+    <header class="top"><h1><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-wrench"/></svg>工具</h1></header>
+    <div id="tools-inner"></div>
+  </div>
+</section>
+
+<!-- Tab 3 更多 -->
+<section class="screen" id="tab-more">
+  <div class="app">
+    <header class="top"><h1>更多</h1></header>
+
+    <!-- 分类：账户与外观（所有用户） -->
+    <div class="acc open" data-acc="account">
+      <div class="acc-h"><span class="at"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-user"/></svg>账户与外观</span><span class="chev">⌄</span></div>
+      <div class="acc-b"><div class="acc-inner">
+
+        <div class="card">
+          <div class="ttl">账号</div>
+          <div class="hint" id="acc">已登录</div>
+          <div style="margin-top:12px"><button class="ghost" id="logout" style="width:100%">退出登录</button></div>
+        </div>
+
+        <div class="card">
+          <div class="ttl">外观 <span class="sub">4 套配色，随意切换</span></div>
+          <div class="theme-row">
+            <div class="theme-opt on" data-theme-opt="dark" id="opt-dark">
+              <div class="sw dark"></div>
+              <div class="nm">曜石黑</div>
+              <div class="ds">默认 · 极简</div>
+            </div>
+            <div class="theme-opt" data-theme-opt="blue" id="opt-blue">
+              <div class="sw blue"></div>
+              <div class="nm">暮光蓝</div>
+              <div class="ds">深色 · 蓝调</div>
+            </div>
+            <div class="theme-opt" data-theme-opt="light" id="opt-light">
+              <div class="sw light"></div>
+              <div class="nm">雾白</div>
+              <div class="ds">浅色 · 清爽</div>
+            </div>
+            <div class="theme-opt" data-theme-opt="gold" id="opt-gold">
+              <div class="sw gold"></div>
+              <div class="nm">商务金</div>
+              <div class="ds">浅色 · 米金</div>
+            </div>
+          </div>
+        </div>
+
+      </div></div>
+    </div>
+
+    <!-- 分类：公告（所有用户） -->
+    <div class="acc" data-acc="ann">
+      <div class="acc-h"><span class="at"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-megaphone"/></svg>公告</span><span class="chev">⌄</span></div>
+      <div class="acc-b"><div class="acc-inner">
+
+        <div class="card">
+          <div class="ttl">公告</div>
+          <div class="hint" id="more-ann">点击下方按钮查看 / 发布公告</div>
+          <div class="ann-note">仅管理员可发布，普通用户只能查看</div>
+          <div style="margin-top:12px;display:flex;gap:10px">
+            <button class="ghost" id="more-ann-view" style="flex:1">查看公告</button>
+            <button class="ghost admin-only" id="more-ann-btn" style="flex:1">发布公告</button>
+          </div>
+        </div>
+
+      </div></div>
+    </div>
+
+    <!-- 分类：我的验证端模块（仅普通用户：自己注入的软件验证端显示的内容，如购买链接） -->
+    <div class="acc user-only" data-acc="mymod" style="display:none">
+      <div class="acc-h"><span class="at"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-grid"/></svg>我的验证端模块</span><span class="chev">⌄</span></div>
+      <div class="acc-b"><div class="acc-inner">
+
+        <div class="card">
+          <div class="ttl">验证端自定义模块 <span class="sub">显示在你注入软件的卡密输入框下方</span></div>
+          <div class="hint">支持多行文字与网址链接（一行一个网址会自动变成可点击链接），例如放你的购买网站。每行请勿包含 HTML。</div>
+          <textarea id="my-mod" rows="6" style="width:100%;margin-top:10px" placeholder="例如：&#10;https://你的购买网站.com&#10;有疑问加客服QQ：123456789"></textarea>
+          <button class="act" id="my-mod-save" style="margin-top:10px">保存模块</button>
+          <div class="hint" id="my-mod-out"></div>
+        </div>
+
+      </div></div>
+    </div>
+
+    <!-- 分类：验证端远程配置（所有登录用户：配置自己验证端外观，免重新注入推送生效） -->
+    <div class="acc" data-acc="shellcfg">
+      <div class="acc-h"><span class="at"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-settings"/></svg>验证端配置</span><span class="chev">⌄</span></div>
+      <div class="acc-b"><div class="acc-inner">
+
+        <div class="card">
+          <div class="ttl">验证端外观 <span class="sub">保存后所有已装用户下次打开自动生效（免重新注入/重装）</span></div>
+          <div class="hint">配置你注入软件的验证端标题、默认主题与底部文字，改完保存即推送。</div>
+          <label style="margin-top:8px">验证端标题</label>
+          <input id="sc-title" placeholder="卡密验证">
+          <label style="margin-top:8px">默认主题</label>
+          <div class="seg" id="sc-theme"><span class="seg-ind"></span>
+            <button data-t="dark" class="on">曜石黑</button>
+            <button data-t="blue">暮光蓝</button>
+            <button data-t="light">雾白</button>
+            <button data-t="gold">商务金</button>
+          </div>
+          <label style="margin-top:8px">底部客服/说明文字（网址自动转链接）</label>
+          <textarea id="sc-qq" rows="2" placeholder="例如：加QQ 123456 &#10;https://你的网站.com"></textarea>
+          <label class="admin-only" style="margin-top:8px;display:flex;align-items:center;gap:8px"><input type="checkbox" id="sc-global" style="width:16px;height:16px;min-width:16px;padding:0;accent-color:var(--acc)"> 同时设为全局默认（所有人未配置时生效）</label>
+          <button class="act" id="sc-save" style="margin-top:10px">保存并推送</button>
+          <div class="hint" id="sc-out"></div>
+        </div>
+
+      </div></div>
+    </div>
+
+    <!-- 分类：配对绑定（所有登录用户：复制验证端底部的配对码，绑定后该验证端归你管理） -->
+    <div class="acc" data-acc="bindcode">
+      <div class="acc-h"><span class="at"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-link"/></svg>绑定用户端</span><span class="chev">⌄</span></div>
+      <div class="acc-b"><div class="acc-inner">
+        <div class="card">
+          <div class="ttl">配对绑定</div>
+          <div class="hint">在验证端底部复制「配对码」（注入产物自带），粘贴到这里绑定后，该验证端的公告/模块/激活查看/邮件通知就归你管理。先到先得，一个码只能绑一次，永久归属。</div>
+          <input type="text" id="bind-code" placeholder="粘贴配对码，如 ABCD12EF" style="margin-top:8px">
+          <button class="btn primary" id="bind-btn" style="margin-top:10px"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-link"/></svg>绑定</button>
+          <div class="res" id="bind-out" style="margin-top:10px"></div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- 分类：激活邮件提醒（所有登录用户：自己生成的卡被激活 → 邮件通知到自己邮箱；管理员配全局） -->
+    <div class="acc" data-acc="ntfy">
+      <div class="acc-h"><span class="at"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-mail"/></svg>激活邮件提醒</span><span class="chev">⌄</span></div>
+      <div class="acc-b"><div class="acc-inner">
+
+        <div class="card">
+          <div class="ttl">激活通知 <span class="sub" id="nt-scope"></span></div>
+          <div class="hint">有人在你生成的卡密上完成激活，自动发邮件通知你（默认开启，发到你自己的邮箱；管理员可配全局收件箱）。</div>
+          <div style="display:flex;align-items:center;gap:10px;margin-top:6px">
+            <input type="checkbox" id="nt-on" style="width:18px;height:18px;min-width:18px;flex:0 0 auto;padding:0;accent-color:var(--acc)">
+            <label style="margin:0">开启激活通知</label>
+          </div>
+          <label style="margin-top:10px">收件邮箱</label>
+          <input type="email" id="nt-email" placeholder="例如：your@qq.com（留空默认发到你自己的邮箱）">
+          <button class="act" id="nt-save" style="margin-top:10px">保存通知设置</button>
+          <div class="hint" id="nt-out"></div>
+        </div>
+
+      </div></div>
+    </div>
+
+    <!-- 分类：我的注入产物（所有登录用户：下载自己注入的 APK，验证端归自己；管理员看全部） -->
+    <div class="acc" data-acc="myinj">
+      <div class="acc-h"><span class="at"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-package"/></svg>我的注入产物</span><span class="chev">⌄</span></div>
+      <div class="acc-b"><div class="acc-inner">
+
+        <div class="card">
+          <div class="ttl">已注入的 APK <span class="sub">下载后验证端就是你的（可配模块 / 公告）</span></div>
+          <div class="hint">用后台「APK 注入」功能注入的 APK 都在这里，随时下载分发。下载安装后打开，验证端即为你的专属端。</div>
+          <div style="margin-top:8px;padding:8px 10px;border-radius:8px;background:rgba(207,149,46,.12);border:1px solid rgba(207,149,46,.3);color:#e6c15c;font-size:11px;line-height:1.5">⚠️ 若列表中的下载链接打不开，说明该产物关联的是已停用的旧服务器，需待注入功能恢复后重新注入。</div>
+          <div id="myinj-list"><div class="muted">加载中…</div></div>
+        </div>
+
+      </div></div>
+    </div>
+
+    <!-- 分类：APK 注入（后台网页版，注入服务走新机 YOUR_SERVER_IP:9090，经 158 同域反代） -->
+    <div class="acc" data-acc="webinj">
+      <div class="acc-h"><span class="at"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-rocket"/></svg>APK 注入</span><span class="chev">⌄</span></div>
+      <div class="acc-b"><div class="acc-inner">
+
+        <div class="card">
+          <div class="ttl">APK 注入验证壳</div>
+          <div class="hint">选一个 APK 上传，服务器自动给它套上卡密验证壳（反编译 → 注入 → 打包 → 签名，大文件约 1–2 分钟）。注入完成的验证端归属你的账号，可配模块/公告。</div>
+          <input type="file" id="inj-web-file" accept=".apk" style="margin-top:10px">
+          <button class="act" id="inj-web-btn" style="margin-top:10px">上传并注入</button>
+          <div class="hint" style="margin-top:8px;font-size:11px;color:var(--sub);line-height:1.5">使用本注入工具即代表您已同意并接受：本工具仅作为技术辅助工具提供，使用者须自行确认对所注入的软件拥有合法授权与使用权限；因使用本工具产生的一切后果与法律风险，由使用者自行承担。</div>
+          <div class="hint" id="inj-web-out"></div>
+          <div id="inj-web-heal" style="margin-top:8px;font-size:12px;color:#e6c15c;display:none;line-height:1.6"></div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+            <div style="flex:1;height:8px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden"><div id="inj-web-bar" style="width:0;height:100%;background:var(--acc);transition:width .4s"></div></div>
+            <span id="inj-web-pct" style="font-size:12px;color:var(--sub);min-width:38px;text-align:right">0%</span>
+          </div>
+          <div id="inj-web-res" style="display:none;margin-top:12px">
+            <div class="mono" id="inj-web-meta" style="font-size:13px;font-weight:600;margin-bottom:4px"></div>
+            <div class="muted" id="inj-web-url" style="word-break:break-all;font-size:12px"></div>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <a class="act" id="inj-web-dl" href="#" download style="display:inline-block;text-decoration:none;text-align:center;padding:9px 16px;border-radius:10px;background:var(--acc);color:var(--acc-text)">下载注入成品</a>
+              <button class="ghost" id="inj-web-copy" style="display:inline-block">复制链接</button>
+              <button class="ghost" id="inj-web-retry" style="display:none"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-refresh"/></svg>重新注入</button>
+            </div>
+          </div>
+          <div id="inj-web-recent" style="margin-top:14px"></div>
+        </div>
+
+      </div></div>
+    </div>
+
+    <!-- 分类：系统自检（仅管理员：一键体检双机/数据库/注入服务/磁盘） -->
+    <div class="acc admin-only" data-acc="selfcheck">
+      <div class="acc-h"><span class="at"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-activity"/></svg>系统自检</span><span class="chev">⌄</span></div>
+      <div class="acc-b"><div class="acc-inner">
+
+        <div class="card">
+          <div class="ttl">一键体检 <span class="sub">检查双机 / 数据库 / 注入服务 / 磁盘</span></div>
+          <div class="hint">自动检查主服务器、注入服务器（YOUR_SERVER_IP）、数据库与磁盘状态，异常项会标红。</div>
+          <button class="act" id="selfcheck-btn" style="margin-top:10px"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-activity"/></svg>开始体检</button>
+          <div id="selfcheck-out" style="margin-top:12px"></div>
+        </div>
+
+      </div></div>
+    </div>
+
+    <!-- 分类：操作日志（仅管理员：谁删了卡/改了配置） -->
+    <div class="acc admin-only" data-acc="oplog">
+      <div class="acc-h"><span class="at"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-clipboard"/></svg>操作日志</span><span class="chev">⌄</span></div>
+      <div class="acc-b"><div class="acc-inner">
+
+        <div class="card">
+          <div class="ttl">最近操作 <span class="sub">记录删卡 / 删用户 / 改配置 / 发公告等（最多 500 条）</span></div>
+          <div id="oplog-list"><div class="muted">展开分类自动加载</div></div>
+        </div>
+
+      </div></div>
+    </div>
+
+    <!-- 分类：更新与分发（版本检查所有人可见；云端推送 / 注入仅管理员） -->
+    <div class="acc" data-acc="dist">
+      <div class="acc-h"><span class="at"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-upload"/></svg>更新与分发</span><span class="chev">⌄</span></div>
+      <div class="acc-b"><div class="acc-inner">
+
+        <div class="card">
+          <div class="ttl">版本与更新 <span class="sub">后台版本与已发布客户端版本（仅供查看）</span></div>
+          <div class="ver-row">
+            <div><span class="ver-k">后台版本</span><b id="ver-admin">--</b></div>
+            <div><span class="ver-k">已发布客户端</span><b id="ver-latest">--</b></div>
+          </div>
+          <div class="hint" id="ver-status">点击下方「检查更新」读取服务器记录的发布版本。当前无活跃客户端连接，版本号仅作记录，重新注入客户端后才会实际生效。</div>
+          <button class="act" id="ver-btn">检查更新</button>
+        </div>
+
+
+
+        <div class="card admin-only" id="upd-card">
+          <div class="ttl">云端更新 / 推送 <button id="upd-refresh" class="ghost sm" style="margin:0">刷新</button></div>
+          <div class="hint" id="upd-status">当前：加载中…</div>
+          <div style="margin-top:8px;padding:8px 10px;border-radius:8px;background:rgba(207,149,46,.12);border:1px solid rgba(207,149,46,.3);color:#e6c15c;font-size:11px;line-height:1.5">💡 此功能向已分发的客户端（注入产物 / 卡密 App）推送更新；当前无活跃客户端时仅作版本管理，发布更新不影响验证功能。</div>
+          <div class="seg" id="upd-seg" style="margin:10px 0 12px"><span class="seg-ind"></span>
+            <button data-upd-mode="file" class="on">上传文件</button>
+            <button data-upd-mode="url">填写网址</button>
+          </div>
+          <div id="upd-file-wrap">
+            <label>上传新 APK（发布为最新版本；仅对未来新注入的客户端生效）</label>
+            <input id="upd-file" type="file" accept=".apk">
+          </div>
+          <div id="upd-url-wrap" style="display:none">
+            <label>更新下载地址（APK 直链，例如把更新文件传到其他服务器 / 网盘后的链接）</label>
+            <input id="upd-url" type="text" placeholder="https://example.com/app_v2.apk">
+          </div>
+          <div class="grid2">
+            <div><label>版本号（versionCode，整数）</label><input id="upd-ver" type="number" value="9" min="1"></div>
+            <div style="display:flex;align-items:flex-end">
+              <label style="margin:0;display:flex;align-items:center;gap:8px;cursor:pointer">
+                <input type="checkbox" id="upd-force" class="chk" checked> 强制更新（不更新不可用）
+              </label>
+            </div>
+          </div>
+          <button class="act" id="upd-btn">发布更新并推送</button>
+          <div class="hint" id="upd-out"></div>
+          <div class="ann-note">注：更新仅对未来重新注入（指向本服务器）的客户端生效。旧版客户端因服务器地址已变更、本身无法连接，不会收到此推送，也不会被强制更新。</div>
+          <div style="border-top:1px dashed var(--line);margin-top:12px;padding-top:12px">
+            <div class="ttl" style="margin:0 0 6px"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-lock"/></svg>停用旧版（版本门槛）</div>
+            <div class="hint">设一个最低版本门槛：所有低于它的注入包打开即显示"已停用，强制更新"（用于一次性作废旧包）。门槛=0 表示不限制。新注入的包自带高版本，自动放行。</div>
+            <div style="display:flex;gap:8px;margin-top:8px">
+              <input id="upd-gate" type="number" min="0" placeholder="门槛（0=不限制）" style="flex:1">
+              <button class="ghost sm" id="upd-gate-btn">保存门槛</button>
+            </div>
+            <div class="hint" id="upd-gate-status" style="margin-top:6px"></div>
+          </div>
+        </div>
+
+      </div></div>
+    </div>
+
+    <!-- 分类：脚本验证（SH 加卡密，管理员） -->
+    <div class="acc admin-only" data-acc="shv">
+      <div class="acc-h"><span class="at"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-terminal"/></svg>脚本验证（SH 加卡密）</span><span class="chev">⌄</span></div>
+      <div class="acc-b"><div class="acc-inner">
+        <div class="card admin-only">
+          <div class="ttl">给 SH 文件加卡密验证 <span class="sub">生成带验证门的 sh，验证通过才执行原脚本</span></div>
+          <div class="ann-note">把你的 sh 脚本原内容贴到下方，点击「生成带验证的 SH」后，会自动在开头插入一段「卡密验证门」：运行时先让你输入邮箱+卡密，验证通过才执行你原来的脚本。验证复用同一套卡密（和卡密 App 通用）。需在已获取 root 或装有 Termux 的安卓设备上运行，且设备能联网访问上方服务器地址（默认已指向本服务器）。</div>
+          <label>服务器地址（验证接口所在，默认自动取当前后台地址）</label>
+          <input id="shv-server" type="text" placeholder="http://YOUR_SERVER_IP:8080">
+          <label>原始 SH 脚本内容</label>
+          <textarea id="shv-src" rows="10" placeholder="#!/system/bin/sh&#10;echo hello"></textarea>
+          <div style="margin-top:12px;display:flex;gap:10px">
+            <button class="act" id="shv-gen" style="flex:1">生成带验证的 SH</button>
+            <button class="ghost" id="shv-clear" style="flex:1">清空</button>
+          </div>
+          <div class="hint" id="shv-out"></div>
+          <div id="shv-result" style="display:none;margin-top:12px">
+            <button class="act" id="shv-dl" style="width:100%">下载带验证的 SH 文件</button>
+            <div class="hint">把下载的 .sh 传到手机，在 Termux 里 <code>bash xxx.sh</code> 运行（需设备已安装 curl），按提示输入邮箱+卡密即可。</div>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- 分类：邮件设置（管理员） -->
+    <div class="acc admin-only" data-acc="mail">
+      <div class="acc-h"><span class="at"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-mail"/></svg>邮件设置</span><span class="chev">⌄</span></div>
+      <div class="acc-b"><div class="acc-inner">
+        <div class="card">
+          <div class="ttl">SMTP 发信配置 <span class="sub">用于注册验证码等邮件</span></div>
+          <div class="hint">填写一个能发信的邮箱（QQ / 163 / 企业邮箱均可）。需先在邮箱设置里开启 SMTP 服务并获取「授权码」填入下方（不是邮箱登录密码）。</div>
+          <div style="margin-top:8px;padding:8px 10px;border-radius:8px;background:rgba(207,149,46,.12);border:1px solid rgba(207,149,46,.3);color:#e6c15c;font-size:11px;line-height:1.5">💡 配置与「发送测试邮件」需要你能登录该邮箱并获取 SMTP 授权码；若当前无法登录邮箱，则暂无法完成配置与验证。</div>
+          <label>SMTP 服务器</label>
+          <input id="smtp-host" type="text" placeholder="例如 smtp.qq.com">
+          <div class="grid2">
+            <div><label>端口</label><input id="smtp-port" type="number" value="465"></div>
+            <div><label>加密方式</label>
+              <select id="smtp-secure" style="width:100%;background:var(--input-bg);border:1px solid var(--line);color:var(--txt);border-radius:13px;padding:14px;font-size:15px">
+                <option value="ssl">SSL（端口 465）</option>
+                <option value="tls">TLS（端口 587）</option>
+                <option value="" selected>无加密（端口 25，不推荐）</option>
+              </select>
+            </div>
+          </div>
+          <label>发件账号（邮箱）</label>
+          <input id="smtp-user" type="text" placeholder="你的邮箱，如 123@qq.com">
+          <label>授权码（不是邮箱密码）</label>
+          <input id="smtp-pass" type="password" placeholder="留空 = 不修改">
+          <label>发件人地址（可选，留空则用发件账号）</label>
+          <input id="smtp-from" type="text" placeholder="可留空">
+          <div style="margin-top:12px;display:flex;gap:10px">
+            <button class="act" id="smtp-save" style="flex:1">保存配置</button>
+            <button class="ghost" id="smtp-test" style="flex:1">发送测试邮件</button>
+          </div>
+          <div class="hint" id="smtp-out"></div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- 分类：运营监控（管理员） -->
+    <div class="acc admin-only" data-acc="ops">
+      <div class="acc-h"><span class="at"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-chart"/></svg>运营监控</span><span class="chev">⌄</span></div>
+      <div class="acc-b"><div class="acc-inner">
+
+        <div class="card admin-only">
+          <div class="ttl">当前在线 <span class="sub">实时活跃设备数</span></div>
+          <div class="hint" id="online-n" style="font-size:22px;font-weight:600;margin:0">0</div>
+        </div>
+
+        <div class="card admin-only">
+          <div class="ttl"><span>操作日志</span>
+            <span style="display:flex;gap:8px">
+              <button id="log-btn" class="ghost sm">刷新</button>
+              <button id="log-clear" class="ghost sm">清空</button>
+            </span>
+          </div>
+          <div class="tablescroll">
+          <table>
+            <thead><tr><th>时间</th><th>IP</th><th>设备</th><th>地点</th><th>动作</th><th>详情</th></tr></thead>
+            <tbody id="log-body"><tr><td colspan="6" class="muted">点击刷新</td></tr></tbody>
+          </table>
+          </div>
+          <div class="keep-inline">
+            <span class="muted">保留最近</span>
+            <input id="log-keep" type="number" value="100" min="0">
+            <span class="muted">条，其余删除：</span>
+            <button class="act sm" id="log-clear-old">删除旧日志</button>
+          </div>
+        </div>
+
+      </div></div>
+    </div>
+
+    <!-- 分类：系统（管理员） -->
+    <div class="acc admin-only" data-acc="sys">
+      <div class="acc-h"><span class="at"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-settings"/></svg>系统</span><span class="chev">⌄</span></div>
+      <div class="acc-b"><div class="acc-inner">
+
+        <div class="card admin-only">
+          <div class="ttl">服务器连接</div>
+          <label>API 地址（壳 / 用户端连接的后端地址）</label>
+          <input id="srv-url" type="text" placeholder="http://YOUR_SERVER_IP:8080">
+          <button class="act" id="srv-btn">保存连接</button>
+          <div class="hint" id="srv-out"></div>
+        </div>
+
+        <div class="card admin-only">
+          <div class="ttl">开放注册</div>
+          <label>是否允许公网自行注册账号（关闭后仅已有账号可登录）</label>
+          <div class="seg" id="reg-seg">
+            <button data-v="1">开放</button>
+            <button data-v="0">关闭</button>
+          </div>
+          <div class="hint" id="reg-out"></div>
+        </div>
+
+      </div></div>
+    </div>
+
+    <!-- 分类：激活密码（管理员） -->
+    <div class="acc admin-only" data-acc="ap">
+      <div class="acc-h"><span class="at"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-key"/></svg>激活密码</span><span class="chev">⌄</span></div>
+      <div class="acc-b"><div class="acc-inner">
+        <div class="card">
+          <div class="ttl">生成激活密码 <span class="sub">发给客户，客户用「邮箱+邮箱密码+激活密码」登录</span></div>
+          <div class="grid2">
+            <div><label>位数（8–40）</label><input id="ap-len" type="number" value="16" min="8" max="40"></div>
+            <div><label>数量（上限 5000）</label><input id="ap-count" type="number" value="1" min="1" max="5000"></div>
+          </div>
+          <div class="grid2">
+            <div><label>有效期数值（0=永久）</label><input id="ap-val" type="number" min="0" placeholder="0=永久"></div>
+            <div><label>单位</label>
+              <div class="seg" id="ap-seg"><span class="seg-ind"></span>
+                <button data-u="day" class="on">天</button>
+                <button data-u="hour">小时</button>
+                <button data-u="forever">永久</button>
+              </div>
+            </div>
+          </div>
+          <div class="grid2">
+            <div><label>可用人数（0=不限）</label>
+              <div class="seg" id="ap-mu-seg"><span class="seg-ind"></span>
+                <button data-mu="1" class="on">1人</button>
+                <button data-mu="2">2人</button>
+                <button data-mu="3">3人</button>
+                <button data-mu="5">5人</button>
+                <button data-mu="10">10人</button>
+                <button data-mu="0">不限</button>
+              </div>
+            </div>
+            <div><label>或自定义人数</label><input id="ap-mu" type="number" value="" min="0" max="100000" placeholder="留空用上方档位"></div>
+          </div>
+          <button class="act" id="ap-btn">生成激活密码</button>
+          <div id="ap-out" class="hint"></div>
+          <div id="ap-list" class="keylist"></div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- 分类：用户管理（管理员） -->
+    <div class="acc admin-only" data-acc="users">
+      <div class="acc-h"><span class="at"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-users"/></svg>用户管理</span><span class="chev">⌄</span></div>
+      <div class="acc-b"><div class="acc-inner">
+        <div class="card">
+          <div class="ttl">注册用户 <span class="sub" id="um-count"></span></div>
+          <label>搜索邮箱 / 用户名</label>
+          <input id="um-search" type="text" placeholder="输入关键字实时过滤">
+          <div id="um-list" class="hint">展开本分类后自动加载用户列表…</div>
+        </div>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 用户详情（管理员） -->
+<div class="mask" id="um-mask">
+  <div class="modal" style="max-width:400px;max-height:86vh;overflow:auto">
+    <div class="mt">用户详情</div>
+    <div id="um-detail"></div>
+    <div class="mb" style="margin-top:16px"><button class="ghost" id="um-close" style="grid-column:1/3">关闭</button></div>
+  </div>
+</div>
+
+<!-- 底部导航 -->
+<nav class="tabbar"><div class="inner">
+  <span class="tab-ind" id="tab-ind"></span>
+  <button class="tab on" data-tab="cards">
+    <svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="4"/><path d="M11 11l9 9"/><path d="M16 14l3-3"/></svg>
+    <span>卡密</span>
+  </button>
+  <button class="tab" data-tab="tools">
+    <svg viewBox="0 0 24 24"><path d="M14.7 6.3a4.5 4.5 0 0 0-6.1 5.4L3 17.4V21h3.6l5.7-5.6a4.5 4.5 0 0 0 5.4-6.1l-2.7 2.7-2.9-2.9z"/></svg>
+    <span>工具</span>
+  </button>
+  <button class="tab" data-tab="more">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M5 12H2M22 12h-3M12 5V2M12 22v-3M7 7 4.5 4.5M19.5 19.5 17 17M17 7l2.5-2.5M4.5 19.5 7 17"/></svg>
+    <span>更多</span>
+  </button>
+  <button class="tab admin-only" data-tab="stats">
+    <svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+    <span>统计</span>
+  </button>
+</div></nav>
+
+<!-- 批量操作条 -->
+<div id="batchbar"><div class="inner">
+  <div class="cnt">已选 <b id="b-cnt">0</b> 个</div>
+  <div class="acts">
+    <button class="ghost" id="b-activate">批量激活</button>
+    <button class="bad" id="b-delete">批量删除</button>
+  </div>
+</div></div>
+
+<!-- 删除确认弹窗 -->
+<div class="mask" id="mask">
+  <div class="modal">
+    <div class="mt">确认删除</div>
+    <div class="md" id="mask-key"></div>
+    <div class="mb">
+      <button class="ghost" id="mask-cancel">取消</button>
+      <button class="bad" id="mask-ok">删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- 批量确认弹窗 -->
+<div class="mask" id="batchmask">
+  <div class="modal">
+    <div class="mt" id="bm-t">确认操作</div>
+    <div class="md" id="bm-d"></div>
+    <div class="mb">
+      <button class="ghost" id="bm-cancel">取消</button>
+      <button class="bad" id="bm-ok">删除</button>
+    </div>
+  </div>
+</div>
+
+<!-- 公告弹窗：验证公告（所有登录用户可发） + 后台公告（仅管理员） -->
+<div class="mask" id="ann-mask">
+  <div class="annmodal">
+    <div class="at">公告</div>
+    <div class="seg two" id="ann-seg" style="margin-bottom:12px"><span class="seg-ind"></span>
+      <button data-t="verify" class="on">验证公告</button>
+      <button data-t="admin">后台公告</button>
+    </div>
+    <div class="ab" id="ann-read"></div>
+    <textarea id="ann-edit" rows="4" style="display:none" placeholder="给用户端显示的通知…"></textarea>
+    <div class="aa" id="ann-actions"></div>
+  </div>
+</div>
+
+<!-- 后台公告实时推送弹框（管理员内部公告，可关闭） -->
+<div class="mask" id="pushAnn-mask" style="display:none">
+  <div id="pushAnn-box">
+    <div class="am-h">
+      <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-megaphone"/></svg>
+      <span id="pushAnn-title">系统公告</span>
+      <button class="am-x" id="pushAnn-x" aria-label="关闭">×</button>
+    </div>
+    <div class="am-b" id="pushAnn-body"></div>
+    <div class="am-f"><button class="act" id="pushAnn-ok">我知道了</button></div>
+  </div>
+</div>
+
+<script>
+const API = "index.php";
+/* 安全 localStorage 封装：沙箱/隐私模式/部分 WebView 访问 localStorage 会抛异常，
+   裸调用会直接崩掉整段脚本（开屏永远卡住）。这里全部兜底为空，绝不抛错。 */
+/* —— 存储层：localStorage 优先，写入失败自动降级 cookie（无痕/隐私模式下 localStorage 不可写时兜底，保证记住账号/自动登录仍生效） —— */
+const CK_PFX = "ck_";
+let __lsOk = true;   // localStorage 可用性标记（false 时登录页提示用户）
+function _ckSet(k, v){
+  try{ document.cookie = CK_PFX + encodeURIComponent(k) + "=" + encodeURIComponent(v || "") + "; expires=" + new Date(Date.now() + 7 * 864e5).toUTCString() + "; path=/"; }catch(_){}
+}
+function _ckGet(k){
+  try{ const m = document.cookie.match(new RegExp("(?:^|; )" + CK_PFX + encodeURIComponent(k) + "=([^;]*)")); return m ? decodeURIComponent(m[1]) : null; }catch(_){ return null; }
+}
+function _ckDel(k){
+  try{ document.cookie = CK_PFX + encodeURIComponent(k) + "=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/"; }catch(_){}
+}
+function lsSet(k, v){
+  let ok = false;
+  try{ localStorage.setItem(k, v); ok = (localStorage.getItem(k) === v); }catch(_){ ok = false; }
+  if(!ok) __lsOk = false;
+  _ckSet(k, v);   // 同时写 cookie 兜底（读取时 localStorage 优先）
+}
+function lsGet(k){
+  let v = null;
+  try{ v = localStorage.getItem(k); }catch(_){ v = null; }
+  if(v !== null && v !== "") return v;
+  return _ckGet(k);
+}
+function lsDel(k){
+  try{ localStorage.removeItem(k); }catch(_){}
+  _ckDel(k);
+}
+(function(){ try{ localStorage.setItem("__ck_probe", "1"); localStorage.removeItem("__ck_probe"); }catch(_){ __lsOk = false; } })();
+/* 网页版本更新自动刷新：当检测到服务端页面更新时自动 reload。
+   用 URL 标记(_rv)防止在存储不可用时陷入无限 reload 死循环。 */
+function applyWebVer(ver){
+  if(!ver) return;
+  if(ver === _pWeb) return;
+  if(ver < _pWeb){ _pWeb = ver; lsSet("cardkey_webver_admin", String(ver)); return; }
+  try{
+    const u = new URL(location.href);
+    if(u.searchParams.get("_rv") === String(ver)){ _pWeb = ver; return; }
+    u.searchParams.set("_rv", String(ver));
+    location.replace(u.toString());
+    return;
+  }catch(_){}
+  _pWeb = ver; lsSet("cardkey_webver_admin", String(ver)); location.reload(true);
+}
+const params = new URLSearchParams(location.search);
+let TOKEN = lsGet("cardkey_token") || (function(){ try { return sessionStorage.getItem("cardkey_token") || ""; } catch(_){ return ""; } })();
+let ROLE  = lsGet("cardkey_role") || (function(){ try { return sessionStorage.getItem("cardkey_role") || ""; } catch(_){ return ""; } })();
+let isAdmin = (ROLE === "admin");
+let UNIT = "day";
+let listMode = "all";
+let allCards = [];
+let cardsTabActive = true;
+let selected = new Set();
+let polling = false;
+let lastListSig = "";
+
+window.addEventListener('error', function(e){
+  var box = document.getElementById('errbox');
+  if(!box){ box = document.createElement('div'); box.id='errbox';
+    box.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;z-index:99999;background:#3a0d12;color:#ffd9dd;font:12px/1.5 monospace;padding:10px;border:1px solid #ff6b81;border-radius:10px;white-space:pre-wrap;max-height:42vh;overflow:auto';
+    document.body.appendChild(box); }
+  box.textContent = '[JS错误] ' + (e.message || e.error || e) + (e.filename ? (' @'+e.filename+':'+e.lineno) : '');
+});
+const q  = (p) => fetch(API + '?token=' + encodeURIComponent(TOKEN) + '&' + p).then(r => r.json());
+const post = (p, b) => fetch(API + "?token=" + encodeURIComponent(TOKEN), {
+  method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: p + (b ? ("&" + b) : "")
+});
+const loginPost = (email, epwd, pass, remember) => fetch(API, {
+  method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+  body: "action=login&pass=" + encodeURIComponent(pass) + "&email=" + encodeURIComponent(email) + "&email_pwd=" + encodeURIComponent(epwd) + "&remember=" + (remember ? 1 : 0)
+}).then(async r => {
+  const t = await r.text();
+  if (!r.ok) throw new Error("HTTP " + r.status + "（登录接口状态码异常）" + (t ? ("：" + t.slice(0, 200)) : ""));
+  if (t.trim() === "") throw new Error("网络超时或连接中断：服务器未返回任何内容（多为公网抖动，请重试）");
+  try { return JSON.parse(t); } catch (ex) { throw new Error("服务器返回的不是JSON（前200字）：" + t.slice(0, 200)); }
+});
+
+/* 复制文本：优先 navigator.clipboard（需 HTTPS），否则降级到 textarea+execCommand，避免 HTTP 页面报错 */
+async function copyText(t){
+  try{ if(navigator.clipboard && navigator.clipboard.writeText){ await navigator.clipboard.writeText(t); return true; } }catch(e){}
+  try{
+    const ta = document.createElement("textarea");
+    ta.value = t; ta.setAttribute("readonly", "");
+    ta.style.position = "fixed"; ta.style.top = "-9999px"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, ta.value.length);
+    const ok = document.execCommand && document.execCommand("copy");
+    document.body.removeChild(ta);
+    return !!ok;
+  }catch(e){ return false; }
+}
+
+/* ===== 主题切换（Apple 风格：闪光 → 过渡 → 保存） ===== */
+function setTheme(name){
+  const cur = document.documentElement.getAttribute("data-theme");
+  if(cur === name) return;
+  // 极简切换：直接换主题（CSS 0.2s 过渡），去掉整屏闪光，低端机更流畅
+  document.documentElement.setAttribute("data-theme", name);
+  // 更新选项卡激活态
+  document.querySelectorAll(".theme-opt").forEach(o => o.classList.toggle("on", o.dataset.themeOpt === name));
+  // 持久化
+  lsSet("cardkey_theme", name);
+}
+document.getElementById("opt-dark").onclick = () => setTheme("dark");
+document.getElementById("opt-blue").onclick = () => setTheme("blue");
+document.getElementById("opt-light").onclick = () => setTheme("light");
+document.getElementById("opt-gold").onclick = () => setTheme("gold");
+// 初始化选项卡激活态
+(function(){
+  const t = document.documentElement.getAttribute("data-theme") || "dark";
+  document.querySelectorAll(".theme-opt").forEach(o => o.classList.toggle("on", o.dataset.themeOpt === t));
+})();
+
+/* ===== 时间工具：稳定、无 locale 乱码 ===== */
+let last = { server_time: Math.floor(Date.now() / 1000) };
+let lastFetch = Date.now();
+function serverNow(){ return last.server_time + Math.floor((Date.now() - lastFetch) / 1000); }
+function pad(n){ return String(n).padStart(2, "0"); }
+function fmtDateTime(t){
+  if(!t) return "-";
+  const d = new Date(t * 1000);
+  return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) + " " + pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds());
+}
+function cd(exp){
+  if(exp === 0 || exp == null) return "永久";
+  let s = Math.floor(exp - serverNow());
+  if(s <= 0) return "已到期";
+  const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
+  return d + "天" + h + "时" + m + "分" + x + "秒";
+}
+// 列表“剩余/有效期”单元格文案：未激活显示有效期文案；永久卡显示永久；激活中倒计时；过期显示已过期/已销毁
+function remainText(c){
+  if(c.status === "active") return c.is_permanent ? "永久" : cd(c.expires_at);
+  if(c.status === "expired") return (c.card_key === "[已销毁]") ? "已销毁" : "已过期";
+  return c.is_permanent ? "永久" : (c.validity_label || "—");
+}
+function remainFromEl(e){
+  const st = e.dataset.status, exp = +e.dataset.exp, perm = e.dataset.perm === "1", vlab = e.dataset.vlabel, destroyed = e.dataset.destroyed === "1";
+  if(st === "active") return perm ? "永久" : cd(exp);
+  if(st === "expired") return destroyed ? "已销毁" : "已过期";
+  return perm ? "永久" : (vlab || "—");
+}
+function stext(s){ return {unused:"未激活",active:"激活中",expired:"已过期",revoked:"已作废"}[s] || s; }
+/* 到期标签：剩余 ≤3 天红 / ≤7 天黄 / ≤30 天灰 */
+function expTag(c){
+  if(c.status !== "active" || !c.expires_at || c.expires_at === 0) return "";
+  const days = (c.expires_at - Date.now()/1000) / 86400;
+  if(days <= 0) return ' <span style="color:#ff5d5d;font-size:10px;border:1px solid rgba(255,93,93,.5);border-radius:6px;padding:1px 4px">已到期</span>';
+  if(days <= 3) return ' <span style="color:#ff5d5d;font-size:10px;border:1px solid rgba(255,93,93,.5);border-radius:6px;padding:1px 4px">' + Math.ceil(days) + '天到期</span>';
+  if(days <= 7) return ' <span style="color:var(--warn);font-size:10px;border:1px solid var(--warn);border-radius:6px;padding:1px 4px">' + Math.ceil(days) + '天内</span>';
+  if(days <= 30) return ' <span style="color:var(--sub);font-size:10px;border:1px solid var(--line);border-radius:6px;padding:1px 4px">' + Math.ceil(days) + '天内</span>';
+  return "";
+}
+
+/* ===== 导航 ===== */
+document.querySelectorAll("#g-seg button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#g-seg button").forEach(x => x.classList.remove("on"));
+  b.classList.add("on"); UNIT = b.dataset.u;
+});
+document.querySelectorAll("#list-seg button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#list-seg button").forEach(x => x.classList.remove("on"));
+  b.classList.add("on"); listMode = b.dataset.m; renderCards(true);
+});
+document.querySelectorAll(".tab").forEach(t => t.onclick = () => {
+  const cur = document.querySelector(".screen.active");
+  const nxt = document.getElementById("tab-" + t.dataset.tab);
+  if(cur === nxt) return;
+  document.querySelectorAll(".tab").forEach(x => x.classList.remove("on"));
+  t.classList.add("on");
+  const go = () => {
+    document.querySelectorAll(".screen").forEach(s => { s.classList.remove("active"); s.classList.remove("leaving"); });
+    if(nxt) nxt.classList.add("active");
+    cardsTabActive = (t.dataset.tab === "cards");
+    if(cardsTabActive) poll();
+    if(t.dataset.tab === "more"){ loadLog(); loadUpdateStatus(); loadVersion(); loadOpLog(); scLoad(); loadNotify(); }
+    if(t.dataset.tab === "tools"){ loadMyInjected(); loadInjRecent(); scLoad(); loadNotify(); loadOpLog(); loadApList(); }
+    if(t.dataset.tab === "stats"){ loadStats(); }
+  };
+  // 旧屏先向左滑出（220ms），再切新屏从右滑入 —— 形成"慢慢划过去"的连续过渡
+  if(cur && cur !== nxt){
+    cur.classList.add("leaving");
+    setTimeout(go, 220);
+  } else go();
+});
+
+/* 更多页：分类折叠（点击分类标题展开/收起） */
+document.querySelectorAll(".acc-h").forEach(h => {
+  h.addEventListener("click", () => h.parentElement.classList.toggle("open"));
+});
+
+/* “🧰 工具”独立 Tab：把工具类分类从“更多”页收纳进工具页（所有用户：注入/我的产物/自检/激活通知；
+   管理员再收日志/SH/SMTP/运维/系统）。DOM 移动不改 HTML 结构，元素 id 不变，按钮绑定照常。 */
+(function(){
+  const inner = document.getElementById('tools-inner');
+  if(!inner) return;
+  const pick = a => document.querySelector('.acc[data-acc="' + a + '"]');
+  // 所有用户可见的工具
+  ['webinj','myinj','selfcheck','ntfy'].forEach(k => {
+    const n = pick(k);
+    if(n){ n.classList.remove('open'); inner.appendChild(n); }
+  });
+  // 自检开放给普通用户（去掉仅管理员限制）
+  const sc = pick('selfcheck');
+  if(sc) sc.classList.remove('admin-only');
+  // 管理员专属工具（保持 admin-only class，普通用户自动隐藏）
+  ['oplog','shv','mail','ops','sys'].forEach(k => {
+    const n = pick(k);
+    if(n){ n.classList.remove('open'); inner.appendChild(n); }
+  });
+})();
+
+/* 配对绑定：复制验证端底部的配对码 → 这里绑定 → 该验证端归当前登录用户（先到先得，永久） */
+(function(){
+  const btn = document.getElementById('bind-btn');
+  const inp = document.getElementById('bind-code');
+  const out = document.getElementById('bind-out');
+  if(!btn || !inp || !out) return;
+  btn.onclick = async () => {
+    const code = (inp.value || '').trim();
+    if(!code){ out.textContent = '请先粘贴配对码'; return; }
+    out.textContent = '绑定中…';
+    try{
+      const r = await post('action=bind_code', 'code=' + encodeURIComponent(code)).then(x => x.json());
+      if(r.ok){
+        out.textContent = '✅ 绑定成功！该验证端现在归你所有（公告/模块/激活通知已切换）。';
+        inp.value = '';
+      } else {
+        out.textContent = '❌ ' + (r.error || '绑定失败');
+      }
+    }catch(_){ out.textContent = '❌ 网络错误，请重试'; }
+  };
+})();
+
+/* ===== 进阶过渡：滑动指示条（选项卡 / 分段控件） ===== */
+function moveInd(ind, btn){
+  if(!ind || !btn) return;
+  ind.style.width = btn.offsetWidth + "px";
+  ind.style.transform = "translateX(" + btn.offsetLeft + "px)";
+}
+function moveTabInd(){
+  const bar = document.querySelector(".tabbar .inner");
+  const ind = document.getElementById("tab-ind");
+  const active = bar ? bar.querySelector(".tab.on") : null;
+  moveInd(ind, active);
+}
+function moveSegInd(seg){
+  if(!seg) return;
+  const ind = seg.querySelector(":scope > .seg-ind");
+  const active = seg.querySelector(":scope > button.on");
+  moveInd(ind, active);
+}
+function initIndicators(){
+  document.querySelectorAll(".seg").forEach(moveSegInd);
+  moveTabInd();
+}
+document.querySelector(".tabbar").addEventListener("click", () => setTimeout(moveTabInd, 0));
+document.querySelectorAll(".seg").forEach(seg => {
+  seg.addEventListener("click", () => setTimeout(() => moveSegInd(seg), 0));
+});
+window.addEventListener("resize", initIndicators);
+// 公告弹窗从 display:none 切到显示时，重新定位指示条（否则 offset 为 0）
+const annMaskEl = document.getElementById("ann-mask");
+if(annMaskEl) new MutationObserver(() => {
+  if(annMaskEl.classList.contains("show")) moveSegInd(document.getElementById("ann-seg"));
+}).observe(annMaskEl, { attributes:true, attributeFilter:["class"] });
+requestAnimationFrame(initIndicators);
+setTimeout(initIndicators, 80);
+
+/* ===== 轮询（数据变化时才重绘，避免闪烁） ===== */
+async function poll(){
+  if(!cardsTabActive || !polling) return;
+  try{
+    const r = await q("action=status");
+    if(r.ok){ last = r; lastFetch = Date.now(); applyStats(r); }
+    const l = await q("action=list");
+    if(l.ok){ allCards = l.cards; renderCards(false); }
+  }catch(e){}
+}
+function applyStats(r){
+  document.getElementById("s-total").textContent = r.total;
+  document.getElementById("s-active").textContent = r.active;
+  document.getElementById("s-used").textContent = r.used;
+  const gl = document.getElementById("g-limit");
+  if (gl) gl.textContent = "已生成 " + r.total + " / 100（上限 100）";
+}
+function listSig(rows){
+  return rows.map(c => c.card_key + "|" + c.status + "|" + c.expires_at + "|" + (c.is_permanent ? 1 : 0)).join(";");
+}
+function renderCards(force){
+  const tb = document.getElementById("list-body");
+  let rows = allCards;
+  if(listMode === "active") rows = allCards.filter(c => c.status === "active");
+  const kw = (window.__cardKw || "").trim().toLowerCase();
+  if(kw) rows = rows.filter(c => (c.card_key + "").toLowerCase().includes(kw) || (c.validity_label + "").toLowerCase().includes(kw));
+  if(!rows.length){
+    tb.innerHTML = '<tr><td colspan="4" class="muted">' + (listMode === "active" ? "暂无激活中的卡密" : "暂无卡密") + "</td></tr>";
+    lastListSig = "";
+    return;
+  }
+  const sig = listSig(rows);
+  if(!force && sig === lastListSig) return;   // 无变化：交给 1s 计时器更新倒计时，不重绘
+  lastListSig = sig;
+  tb.innerHTML = rows.map((c, i) => {
+    const on = selected.has(c.card_key) ? "checked" : "";
+    const sel = selected.has(c.card_key) ? " sel" : "";
+    return '<tr class="' + sel + '">' +
+      '<td style="vertical-align:top;padding-top:14px"><input type="checkbox" class="chk" data-key="' + c.card_key + '" ' + on + '></td>' +
+      '<td colspan="4"><div class="mono" style="margin-bottom:5px">' + c.card_key + '</div>' +
+      '<div style="display:flex;align-items:center;gap:10px;font-size:11px;color:var(--sub);flex-wrap:wrap">' +
+      '<span style="' + (c.status === "active" ? "color:var(--ok)" : "") + '">' + stext(c.status) + expTag(c) + '</span>' +
+      '<span class="mono" data-status="' + c.status + '" data-exp="' + c.expires_at + '" data-perm="' + (c.is_permanent ? 1 : 0) + '" data-vlabel="' + (c.validity_label || "") + '" data-destroyed="' + (c.card_key === "[已销毁]" ? 1 : 0) + '">' + remainText(c) + '</span>' +
+      '<span style="flex:1"></span><button class="ghost sm" data-cp="' + c.card_key + '">复制</button>' +
+      '<button class="ghost sm" style="color:#e5484d" data-del="' + c.card_key + '">删</button></div></td></tr>';
+  }).join("");
+  tb.querySelectorAll("input.chk").forEach(ch => {
+    ch.onchange = () => {
+      const k = ch.dataset.key;
+      if(ch.checked){ selected.add(k); ch.closest("tr").classList.add("sel"); }
+      else { selected.delete(k); ch.closest("tr").classList.remove("sel"); }
+      updateBatchBar();
+    };
+  });
+  tb.querySelectorAll("button[data-cp]").forEach(b => b.onclick = () => copyText(b.dataset.cp));
+  tb.querySelectorAll("button[data-del]").forEach(b => b.onclick = () => askDel(b.dataset.del));
+}
+function updateBatchBar(){
+  document.getElementById("b-cnt").textContent = selected.size;
+  document.getElementById("batchbar").classList.toggle("show", selected.size > 0);
+}
+// 全选：一键勾选/取消当前列表所有卡密
+const selAll = document.getElementById("sel-all");
+if (selAll) {
+  selAll.onchange = () => {
+    const tb = document.getElementById("list-body");
+    tb.querySelectorAll("input.chk[data-key]").forEach(ch => {
+      ch.checked = selAll.checked;
+      const k = ch.dataset.key;
+      if (selAll.checked) { selected.add(k); ch.closest("tr").classList.add("sel"); }
+      else { selected.delete(k); ch.closest("tr").classList.remove("sel"); }
+    });
+    updateBatchBar();
+  };
+}
+// 卡密列表搜索：输入即过滤（按卡密/有效期文案）
+(function(){
+  const s = document.getElementById("list-search");
+  if(s) s.addEventListener("input", () => { window.__cardKw = s.value; renderCards(true); });
+})();
+// 网页自动更新：服务端 gate.html/admin.html 变更后，本页自动刷新到最新（“你改完，那边刷新即生效”）
+(function(){
+  function checkWebUpdate(){
+    try{
+      q("action=version_check").then(r => {
+        applyWebVer(r.web_ver);
+      }).catch(()=>{});
+    }catch(e){}
+  }
+  checkWebUpdate();
+  document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible") checkWebUpdate(); });
+  window.addEventListener("focus", checkWebUpdate);
+  setInterval(checkWebUpdate, 30000);
+})();
+// 1 秒计时器：仅更新“剩余/有效期”文字，不重绘整表
+setInterval(() => {
+  document.querySelectorAll("[data-exp]").forEach(e => { e.textContent = remainFromEl(e); });
+}, 1000);
+
+function renderGen(keys){
+  const el = document.getElementById("g-list");
+  if(!keys || !keys.length){ el.innerHTML = ""; return; }
+  el.innerHTML = keys.map((k, i) => '<div class="krow" style="animation-delay:' + (i * 0.02) + 's"><span class="mono">' + k + '</span><button class="ghost sm" data-k="' + k + '">复制</button></div>').join("");
+  el.querySelectorAll("button[data-k]").forEach(b => b.onclick = () => {
+    copyText(b.dataset.k);
+    b.textContent = "已复制"; setTimeout(() => b.textContent = "复制", 1200);
+  });
+}
+
+/* ===== 删除确认 ===== */
+let pendingDel = "";
+const mask = document.getElementById("mask");
+function askDel(key){ pendingDel = key; document.getElementById("mask-key").textContent = key; mask.classList.add("show"); }
+document.getElementById("mask-cancel").onclick = () => mask.classList.remove("show");
+document.getElementById("mask-ok").onclick = async () => {
+  const key = pendingDel;
+  const r = await post("action=delete", "key=" + encodeURIComponent(key)).then(x => x.json()).catch(e => ({ok:false, error:String(e)}));
+  mask.classList.remove("show");
+  if(r.ok){ selected.delete(key); updateBatchBar(); poll(); }
+  else { alert("删除失败：" + (r.error || "未知错误")); }
+};
+
+/* ===== 批量操作 ===== */
+const batchmask = document.getElementById("batchmask");
+document.getElementById("b-activate").onclick = async () => {
+  const keys = [...selected];
+  const r = await post("action=batch_activate", "keys[]=" + keys.map(encodeURIComponent).join("&keys[]=")).then(x => x.json());
+  if(!r.ok){ alert("失败：" + r.error); return; }
+  const okN = r.results.filter(x => x.ok).length;
+  const bad = r.results.filter(x => !x.ok);
+  alert("成功激活 " + okN + " 个" + (bad.length ? "，失败 " + bad.length + " 个（" + bad.map(x => x.error).join("、") + "）" : ""));
+  selected.clear(); updateBatchBar(); poll();
+};
+document.getElementById("b-delete").onclick = () => {
+  if(!selected.size) return;
+  document.getElementById("bm-t").textContent = "确认批量删除";
+  document.getElementById("bm-d").textContent = "将删除选中的 " + selected.size + " 个卡密，且不可恢复。";
+  document.getElementById("bm-ok").textContent = "删除";
+  batchmask.classList.add("show");
+};
+document.getElementById("bm-cancel").onclick = () => batchmask.classList.remove("show");
+document.getElementById("bm-ok").onclick = async () => {
+  const keys = [...selected];
+  if(!keys.length) return;
+  const r = await post("action=batch_delete", "keys[]=" + keys.map(encodeURIComponent).join("&keys[]=")).then(x => x.json()).catch(e => ({ok:false, error:String(e)}));
+  batchmask.classList.remove("show");
+  if(r.ok){ selected.clear(); updateBatchBar(); poll(); alert("已删除 " + (r.deleted || keys.length) + " 个"); }
+  else { alert("删除失败：" + (r.error || "未知错误")); }
+};
+
+/* ===== 公告弹窗：普通用户=验证公告(自己空间的)；管理员=后台公告 ===== */
+const annMask = document.getElementById("ann-mask");
+let annType = "verify";
+function myEmail(){ return lsGet("cardkey_email") || ""; }
+async function openAnn(type){
+  if(type) annType = type;
+  const isUser = (ROLE === "user");
+  // 验证公告：普通用户读写自己的（owner=登录邮箱）；后台公告：管理员全局
+  const action = annType === "verify" ? "announce_verify" : "announce";
+  const qs = (annType === "verify" && isUser) ? ("action=" + action + "&owner=" + encodeURIComponent(myEmail())) : ("action=" + action);
+  const r = await q(qs);
+  const key = annType === "verify" ? "announce_verify" : "announce";
+  const cur = (r.ok && r[key]) ? r[key] : "";
+  const read = document.getElementById("ann-read");
+  const editEl = document.getElementById("ann-edit");
+  const actions = document.getElementById("ann-actions");
+  editEl.style.display = "none"; read.style.display = "block";
+  read.textContent = cur || "（暂无公告）";
+  read.className = "ab" + (cur ? "" : " empty");
+  // tab 按角色：管理员只看后台公告；普通用户只看验证公告
+  document.querySelectorAll("#ann-seg button").forEach(b => {
+    b.style.display = ((b.dataset.t === "verify" && isAdmin) || (b.dataset.t === "admin" && isUser)) ? "none" : "";
+  });
+  const canEdit = (annType === "verify") ? isUser : isAdmin;
+  if(canEdit){
+    const delBtn = cur ? '<button class="ghost" id="ann-del-btn" style="color:#ff5d5d">删除公告</button>' : '';
+    actions.innerHTML = '<button class="ghost" id="ann-edit-btn">编辑</button>' + delBtn + '<button class="act sm" id="ann-close">关闭</button>';
+    document.getElementById("ann-edit-btn").onclick = () => openAnnEdit(cur);
+    const dbtn = document.getElementById("ann-del-btn");
+    if(dbtn) dbtn.onclick = async () => {
+      if(!confirm("确定删除这条公告？（删除后验证端将不再显示）")) return;
+      await publishAnn("");
+      openAnn();
+    };
+  }else{
+    actions.innerHTML = '<button class="act sm" id="ann-close">关闭</button>';
+  }
+  document.getElementById("ann-close").onclick = closeAnn;
+  annMask.classList.add("show");
+}
+async function openAnnEdit(cur){
+  annMask.classList.add("show");
+  const read = document.getElementById("ann-read");
+  const editEl = document.getElementById("ann-edit");
+  const actions = document.getElementById("ann-actions");
+  read.style.display = "none"; editEl.style.display = "block"; editEl.value = cur;
+  actions.innerHTML = '<button class="ghost" id="ann-cancel">取消</button><button class="act sm" id="ann-pub">发布</button>';
+  document.getElementById("ann-cancel").onclick = () => openAnn();
+  document.getElementById("ann-pub").onclick = publishAnn;
+}
+function closeAnn(){ annMask.classList.remove("show"); sessionStorage.setItem("cardkey_ann_seen", "1"); }
+async function publishAnn(delMsg){
+  // delMsg 提供时：直接发布该内容（可为空=删除公告）；否则取编辑框内容
+  const msg = (delMsg !== undefined) ? delMsg : document.getElementById("ann-edit").value.trim();
+  const action = annType === "verify" ? "announce_verify" : "announce";
+  const r = await post("action=" + action, "msg=" + encodeURIComponent(msg)).then(x => x.json());
+  if(r.ok){ openAnn(); }
+}
+document.getElementById("ann-open").onclick = () => openAnn(ROLE === "admin" ? "admin" : "verify");
+document.getElementById("more-ann-view").onclick = () => openAnn(ROLE === "admin" ? "admin" : "verify");
+document.getElementById("more-ann-btn").onclick = () => { annType = "admin"; openAnnEdit(""); };
+document.querySelectorAll("#ann-seg button").forEach(b => b.onclick = () => {
+  document.querySelectorAll("#ann-seg button").forEach(x => x.classList.remove("on"));
+  b.classList.add("on"); openAnn(b.dataset.t);
+});
+
+/* ===== 我的验证端模块（普通用户）：加载/保存 ===== */
+async function loadMyMod(){
+  if(ROLE !== "user") return;
+  try{
+    const r = await q("action=module&owner=" + encodeURIComponent(myEmail()));
+    if(r.ok){ document.getElementById("my-mod").value = r.module || ""; }
+  }catch(e){}
+}
+document.getElementById("my-mod-save").onclick = async () => {
+  const content = document.getElementById("my-mod").value.trim();
+  const r = await post("action=module", "content=" + encodeURIComponent(content)).then(x => x.json()).catch(e => ({ok:false, error:String(e)}));
+  const out = document.getElementById("my-mod-out");
+  if(r.ok){
+    out.textContent = "已保存 ✓（打开你注入的软件验证端即可看到）";
+    setTimeout(() => out.textContent = "", 5000);
+  }else{
+    out.textContent = "保存失败：" + (r.error || "");
+  }
+};
+(async () => {
+  try{
+    if(isAdmin){
+      const r = await q("action=announce");
+      if(r.ok && r.announce && !sessionStorage.getItem("cardkey_ann_seen")){ annType = "admin"; openAnn("admin"); }
+    }else if(ROLE === "user"){
+      const r = await q("action=announce_verify&owner=" + encodeURIComponent(myEmail()));
+      if(r.ok && r.announce_verify && !sessionStorage.getItem("cardkey_ann_seen")){ annType = "verify"; openAnn("verify"); }
+    }
+  }catch(e){}
+})();
+
+/* ===== 操作日志 ===== */
+async function loadLog(){
+  if(!isAdmin) return;
+  const r = await q("action=loginlist");
+  if(!r.ok) return;
+  const tb = document.getElementById("log-body");
+  if(!r.logs.length){ tb.innerHTML = '<tr><td colspan="6" class="muted">暂无</td></tr>'; return; }
+  // 2026-08-07 审计修复：ip/device/location/action/detail 全部用户可控（activate 的 device、verify_card 的 email
+  // 均不设白名单），原 innerHTML 直拼 → 存储型 XSS：普通用户带 device=<script>… 激活，管理员打开日志页即被注入，
+  // 可窃取 localStorage 里的 admin_token / 明文账号密码。全部转义。
+  tb.innerHTML = r.logs.map(l =>
+    '<tr><td class="mono">' + fmtDateTime(l.at) + '</td>' +
+    '<td class="mono">' + escapeHtml(l.ip || '-') + '</td>' +
+    '<td>' + escapeHtml(l.device || '-') + '</td>' +
+    '<td>' + escapeHtml(l.location || '-') + '</td>' +
+    '<td>' + escapeHtml(l.action) + '</td>' +
+    '<td class="muted">' + escapeHtml(l.detail || '') + '</td></tr>'
+  ).join("");
+}
+document.getElementById("log-btn").onclick = loadLog;
+document.getElementById("log-clear").onclick = async () => {
+  if(!isAdmin) return;
+  if(!confirm("确定清空全部操作日志？此操作不可恢复。")) return;
+  const r = await post("action=clear_logs", "mode=all").then(x => x.json());
+  if(r.ok){ alert("已清空，剩余 " + r.rest + " 条"); loadLog(); }
+  else alert("失败：" + (r.error || ""));
+};
+document.getElementById("log-clear-old").onclick = async () => {
+  if(!isAdmin) return;
+  const keep = document.getElementById("log-keep").value || 100;
+  if(!confirm("确定删除除最近 " + keep + " 条外的旧日志？")) return;
+  const r = await post("action=clear_logs", "mode=keep&keep=" + keep).then(x => x.json());
+  if(r.ok){ alert("已清理，剩余 " + r.rest + " 条"); loadLog(); }
+  else alert("失败：" + (r.error || ""));
+};
+
+async function loadOnline(){
+  if(!isAdmin) return;
+  const r = await q("action=online_count");
+  if(r.ok) document.getElementById("online-n").textContent = r.online;
+}
+document.getElementById("srv-btn").onclick = async () => {
+  const url = document.getElementById("srv-url").value.trim();
+  if(!url) return;
+  const r = await post("action=set_server", "api_base=" + encodeURIComponent(url)).then(x => x.json());
+  document.getElementById("srv-out").textContent = r.ok ? "已保存（壳与用户端将使用此地址）" : ("失败：" + (r.error || ""));
+};
+
+/* ===== 云端更新 / 推送（管理员） ===== */
+async function loadUpdateStatus(){
+  if(!isAdmin) return;
+  const el = document.getElementById("upd-status");
+  try{
+    const r = await q("action=version_check&v=0");
+    if(r.ok){
+      el.innerHTML = "最新版本：<b>" + r.latest + "</b> ｜ 强制更新：" + (r.force ? "<b style='color:var(--bad)'>是</b>" : "否") +
+        "<br><span class='mono'>" + (r.url || "-") + "</span>";
+      const gs = document.getElementById("upd-gate-status");
+      const gi = document.getElementById("upd-gate");
+      if(gs && gi){
+        const gv = (r.gate_min_ver || 0);
+        gi.value = gv;
+        gs.textContent = gv > 0
+          ? ("当前门槛 <b style='color:var(--bad)'>" + gv + "</b>：低于此版本的所有注入包已停用（强制更新中）")
+          : "当前未停用（门槛 0）：所有注入包正常使用";
+      }
+    }else{
+      el.textContent = "读取失败：" + (r.error || "");
+    }
+  }catch(e){ el.textContent = "读取失败"; }
+}
+async function loadVersion(){
+  const out = document.getElementById("ver-status");
+  out.innerHTML = "检查中…";
+  try{
+    const r = await q("action=version_check&v=0");
+    if(r.ok){
+      document.getElementById("ver-admin").textContent = r.admin_version || "--";
+      document.getElementById("ver-latest").textContent = "v" + (r.latest || "--");
+      let s = "后台版本 <b>" + (r.admin_version || "-") + "</b> ｜ 已发布客户端 <b>v" + (r.latest || "-") + "</b>";
+      if(r.latest && (r.app_version_code || 0) < r.latest){
+        s += "<br><b style='color:var(--bad)'>存在更新记录（v" + r.latest + "）</b>：仅对未来重新注入的客户端生效，旧客户端已失效不会收到。";
+        if(r.url) s += "<br><span class='mono'>" + r.url + "</span>";
+      } else {
+        s += "<br><b style='color:var(--ok)'>已是最新发布记录</b>";
+      }
+      out.innerHTML = s;
+    } else { out.textContent = "读取失败：" + (r.error || ""); }
+  }catch(e){ out.textContent = "读取失败"; }
+}
+document.getElementById("ver-btn").onclick = loadVersion;
+document.getElementById("upd-refresh").onclick = loadUpdateStatus;
+(function(){
+  const gbtn = document.getElementById("upd-gate-btn");
+  const gin = document.getElementById("upd-gate");
+  const gs = document.getElementById("upd-gate-status");
+  if(!gbtn || !gin || !gs) return;
+  gbtn.onclick = async () => {
+    const v = parseInt(gin.value, 10);
+    if(isNaN(v) || v < 0){ gs.textContent = "请输入 0 或正整数（0=不限制）"; return; }
+    gs.textContent = "保存中…";
+    try{
+      const r = await post("action=set_gate_ver", "gate_min_ver=" + v).then(x => x.json());
+      gs.innerHTML = r.ok
+        ? (v > 0 ? "✅ 已停用：低于 <b>" + v + "</b> 的注入包全部强制更新" : "✅ 已取消停用（门槛 0）")
+        : ("❌ " + (r.error || "保存失败"));
+    }catch(_){ gs.textContent = "❌ 网络错误"; }
+  };
+})();
+function bindUpdMode(){
+  const seg = document.getElementById("upd-seg");
+  if(!seg) return;
+  const ind = seg.querySelector(".seg-ind");
+  const btns = seg.querySelectorAll("button");
+  function move(b){
+    btns.forEach(x => x.classList.remove("on"));
+    b.classList.add("on");
+    const i = Array.prototype.indexOf.call(btns, b);
+    if(ind){ ind.style.width = (100 / btns.length) + "%"; ind.style.transform = "translateX(" + (i * 100) + "%)"; }
+    const m = b.dataset.updMode;
+    const fw = document.getElementById("upd-file-wrap"), uw = document.getElementById("upd-url-wrap");
+    if(fw) fw.style.display = (m === "file") ? "block" : "none";
+    if(uw) uw.style.display  = (m === "url")  ? "block" : "none";
+  }
+  btns.forEach(b => b.onclick = () => move(b));
+  if(btns[0]) move(btns[0]);
+}
+bindUpdMode();
+
+document.getElementById("upd-btn").onclick = async () => {
+  const ver = document.getElementById("upd-ver").value;
+  const force = document.getElementById("upd-force").checked ? 1 : 0;
+  const out = document.getElementById("upd-out");
+  if(!ver || +ver < 1){ out.textContent = "版本号必须为正整数"; return; }
+  const segOn = document.querySelector("#upd-seg button.on");
+  const mode = segOn ? segOn.dataset.updMode : "file";
+  out.textContent = "发布中…";
+  try{
+    if(mode === "url"){
+      const url = (document.getElementById("upd-url").value || "").trim();
+      if(!/^https?:\/\//.test(url)){ out.textContent = "请填写合法的 http(s) 下载地址"; return; }
+      const r = await post("action=set_update", "version=" + ver + "&url=" + encodeURIComponent(url) + "&force=" + force).then(x => x.json());
+      out.textContent = r.ok ? ("已通过网址发布，最新版本 " + r.latest) : ("失败：" + (r.error || ""));
+    }else{
+      const f = document.getElementById("upd-file").files[0];
+      if(!f){ out.textContent = "请先选择 APK 文件，或切换到「填写网址」模式"; return; }
+      const fd = new FormData();
+      fd.append("file", f); fd.append("version", ver); fd.append("force", force);
+      const r = await fetch(API + "?token=" + encodeURIComponent(TOKEN) + "&action=upload_update", { method: "POST", body: fd }).then(x => x.json());
+      out.textContent = r.ok ? ("已推送：" + r.url) : ("失败：" + (r.error || ""));
+    }
+    loadUpdateStatus();
+  }catch(e){ out.textContent = "错误：" + (e && e.message ? e.message : ""); }
+};
+
+/* APK 注入功能已于 2026-08-05 关闭（改用独立 APK 版注入器），相关 JS 已随 UI 一起移除 */
+
+document.getElementById("g-btn").onclick = async () => {
+  const len = document.getElementById("g-len").value;
+  const cnt = document.getElementById("g-count").value;
+  const val = document.getElementById("g-val").value;
+  if (!cnt || parseInt(cnt, 10) < 1) {
+    document.getElementById("g-out").textContent = "请填写生成数量。";
+    return;
+  }
+  const gSegOn = document.querySelector("#g-seg button.on");
+  const gUnit = gSegOn ? gSegOn.dataset.u : "day";
+  if (gUnit !== "forever" && (!val || val === "" || parseInt(val, 10) < 1)) {
+    document.getElementById("g-out").textContent = "请填写有效期数值（或选择「永久」）。";
+    return;
+  }
+  const r = await post("action=generate", "len=" + len + "&count=" + cnt + "&value=" + val + "&unit=" + UNIT).then(x => x.json());
+  if(!r.ok){ document.getElementById("g-out").textContent = "失败：" + r.error; return; }
+  const unitText = { day: "天", hour: "小时", forever: "永久" }[r.unit] || r.unit;
+  document.getElementById("g-out").textContent = "已生成 " + r.count + " 条 ✓ 已加入下方卡密列表";
+  // 不再单独展示生成结果区，生成后直接切到「全部」列表查看
+  const gl = document.getElementById("g-list"); if(gl) gl.innerHTML = "";
+  const segBtns = document.querySelectorAll("#list-seg button");
+  segBtns.forEach(x => x.classList.remove("on"));
+  const allBtn = document.querySelector('#list-seg button[data-m="all"]');
+  if(allBtn) allBtn.classList.add("on");
+  listMode = "all";
+  polling = true;              // 强制开启轮询（防自动登录等极端情况未启动轮询导致列表不刷新）
+  lastListSig = ""; poll();
+};
+document.getElementById("log-btn") && (document.getElementById("log-btn").onclick = loadLog);
+
+/* ===== 登录流程（单一界面，按密码区分角色） ===== */
+const loginEl = document.getElementById("login");
+const lPwd = document.getElementById("l-pwd");
+const lEmail = document.getElementById("l-email");
+const lEPwd = document.getElementById("l-epwd");
+const lErr = document.getElementById("l-err");
+function applyRole(){
+  isAdmin = (ROLE === "admin");
+  document.body.classList.toggle("role-user", ROLE === "user");
+  // 账号区显示邮箱 + 注册用户名（“账户与外观 → 账号”）
+  const un = lsGet("cardkey_username") || "";
+  const em = lsGet("cardkey_email") || "";
+  let label;
+  if(ROLE === "admin") label = "管理员";
+  else if(em && un) label = "普通用户（" + em + " · " + un + "）";
+  else if(em) label = "普通用户（" + em + "）";
+  else if(un) label = "普通用户（" + un + "）";
+  else label = "普通用户";
+  document.getElementById("acc").textContent = "已登录：" + label;
+}
+let pingTimer = null;
+function startPing(){
+  if(pingTimer) clearInterval(pingTimer);
+  measurePing();
+  pingTimer = setInterval(measurePing, 10000);
+}
+async function measurePing(){
+  const el = document.getElementById("ping");
+  if(!el || !TOKEN) return;
+  const t0 = performance.now();
+  try{
+    const r = await fetch(API + "?token=" + encodeURIComponent(TOKEN) + "&action=status");
+    await r.json();
+    const ms = Math.round(performance.now() - t0);
+    el.innerHTML = "延迟<b>" + ms + "ms</b>";
+    el.className = "ping " + (ms < 120 ? "good" : ms < 350 ? "mid" : "bad");
+    if(isAdmin) loadOnline();
+  }catch(e){
+    el.innerHTML = "延迟<b>--</b>";
+    el.className = "ping bad";
+  }
+}
+function enterApp(){
+  // 清空上一账号的“生成结果”缓存，防止切换账号后串号看到别人的卡
+  const gl = document.getElementById("g-list"); if(gl) gl.innerHTML = "";
+  const go = document.getElementById("g-out"); if(go) go.textContent = "";
+  loginEl.classList.remove("show");
+  applyRole();
+  if(cardsTabActive){ polling = true; poll(); }
+  if(isAdmin){ loadLog(); loadOnline(); loadUpdateStatus(); loadRegister(); }
+  if(ROLE === "user"){ loadMyMod(); }
+  startPing();
+}
+function showLogin(){
+  loginEl.classList.add("show"); fillRemembered(); lPwd.focus();
+  const w = document.getElementById("l-storage-warn");
+  if(w) w.style.display = __lsOk ? "none" : "block";
+}
+function doLogin(tryN){
+  if (typeof tryN !== "number") tryN = 0;
+  lErr.textContent = "";
+  const email = (lEmail.value || "").trim();
+  const epwd  = lEPwd.value || "";
+  const v = (lPwd.value || "").trim();
+  if(!v){ lErr.textContent = "请输入激活密码（卡密）"; return; }
+  // 管理员：仅“激活密码”框填管理员密码即可（其余留空）；普通用户需 邮箱+邮箱密码+激活密码 三者同时
+  loginPost(email, epwd, v, (document.getElementById("l-remember") && document.getElementById("l-remember").checked)).then(r => {
+    if(!r.ok){ lErr.textContent = r.error || "登录失败"; return; }
+    TOKEN = r.token; ROLE = r.role;
+    lsSet("cardkey_email", email);          // 记住登录邮箱（公告/模块按自己的空间读写）
+    lsSet("cardkey_username", r.username || "");   // 记住账户名（注册时填的）
+    // 记录账号（默认勾选）：持久保存登录态 → 下次打开自动登录（72 小时 / IP 变动后需重新登录）
+    if(document.getElementById("l-remember").checked){
+      lsSet("cardkey_token", TOKEN); lsSet("cardkey_role", ROLE);
+      lsSet("cardkey_rm_email", email);
+      lsSet("cardkey_rm_epwd", epwd);
+      lsSet("cardkey_rm_pwd", v);
+      try{ sessionStorage.removeItem("cardkey_token"); sessionStorage.removeItem("cardkey_role"); }catch(_){}
+    }else{
+      lsDel("cardkey_token"); lsDel("cardkey_role");
+      lsDel("cardkey_rm_email"); lsDel("cardkey_rm_epwd"); lsDel("cardkey_rm_pwd");
+      try{ sessionStorage.setItem("cardkey_token", TOKEN); sessionStorage.setItem("cardkey_role", ROLE); }catch(_){}
+    }
+    lEmail.value = ""; lEPwd.value = ""; lPwd.value = "";
+    enterApp();
+  }).catch(e => {
+    console.error("login-fail", e);
+    const msg = (e && e.message) ? e.message : "请重试（按F12看控制台）";
+    // 网络超时/连接中断/空响应/非JSON：自动重试最多2次（公网抖动多为间歇性，重试即成功）
+    if (tryN < 2 && /网络超时|连接中断|HTTP 0|Failed to fetch|不是JSON/i.test(msg)) {
+      lErr.textContent = "登录重试中…(" + (tryN + 1) + "/2) —— " + msg;
+      setTimeout(function(){ doLogin(tryN + 1); }, 700 * (tryN + 1));
+      return;
+    }
+    lErr.textContent = "网络错误：" + msg;
+  });
+}
+document.getElementById("l-btn").onclick = doLogin;
+[lPwd, lEmail, lEPwd].forEach(function(el){ el.addEventListener("keydown", function(e){ if(e.key === "Enter") doLogin(); }); });
+
+// 登录页显示当前访问 IP（管理员 IP 白名单排查用：流量/网络变了就知道当前 IP）
+(function(){
+  const lip = document.getElementById("l-ip");
+  if(!lip) return;
+  fetch(API + "?action=my_ip").then(x => x.json()).then(r => {
+    if(r && r.ok && r.ip) lip.textContent = "当前访问 IP：" + r.ip;
+    else lip.textContent = "";
+  }).catch(() => { lip.textContent = ""; });
+})();
+
+// 记录账号：把记住的邮箱/密码/卡密自动填回登录框（退出/失效后免手输，只点一下登录）
+function fillRemembered(){
+  const rmE = lsGet("cardkey_rm_email"), rmP = lsGet("cardkey_rm_pwd"), rmEP = lsGet("cardkey_rm_epwd");
+  const le = document.getElementById("l-email"), lp = document.getElementById("l-pwd"), lep = document.getElementById("l-epwd");
+  if(le) le.value = rmE || "";
+  if(lep) lep.value = rmEP || "";
+  if(lp) lp.value = rmP || "";
+  if(document.getElementById("l-remember")) document.getElementById("l-remember").checked = true;
+  return !!(rmE || rmP);
+}
+// 清除失效登录态（verify_session 失败 / 退出时），并回填记住的账号
+function clearSessionAndFill(){
+  lsDel("cardkey_token"); lsDel("cardkey_role"); lsDel("cardkey_email"); lsDel("cardkey_username");
+  try{ sessionStorage.removeItem("cardkey_token"); sessionStorage.removeItem("cardkey_role"); }catch(_){}
+  fillRemembered();
+}
+// 页面加载：若 token 失效（登录页即将显示），先把记住的账号填好
+(function(){
+  if(!lsGet("cardkey_token")) fillRemembered();
+})();
+
+function doLogout(){
+  polling = false; TOKEN = ""; ROLE = "";
+  // 服务端 IP 免登：退出时清除本 IP 的记住标记（避免这台机器上的其他人免登进后台）
+  try{ fetch(API + "?action=forget_me").catch(()=>{}); }catch(_){}
+  // 清登录态（保留 cardkey_rm_* 记住的账号信息，用于退出后自动回填）
+  clearSessionAndFill();
+  // 立即清空上一个账号的统计数据与列表，防止切换账号时残留显示
+  const st = document.getElementById("s-total"); if(st) st.textContent = "0";
+  const sa = document.getElementById("s-active"); if(sa) sa.textContent = "0";
+  const su = document.getElementById("s-used"); if(su) su.textContent = "0";
+  const gl2 = document.getElementById("g-limit"); if(gl2) gl2.textContent = "";
+  allCards = []; lastListSig = "";
+  const tb = document.getElementById("list-body");
+  if(tb) tb.innerHTML = '<tr><td colspan="4" class="muted">已退出登录</td></tr>';
+  // 清空生成结果缓存，防止下个账号登录看到上个账号生成的卡
+  const gl = document.getElementById("g-list"); if(gl) gl.innerHTML = "";
+  const go = document.getElementById("g-out"); if(go) go.textContent = "";
+  document.body.classList.remove("role-user");
+  showLogin();
+}
+document.getElementById("logout").onclick = doLogout;
+
+/* 会话存活校验：每 15 秒调 verify_session，若“激活密码(卡密)”被管理员删除，立即踢出并提示 */
+let _sessKicked = false;
+function startSessionWatch(){
+  setInterval(async () => {
+    if(_sessKicked || !TOKEN) return;
+    try{
+      const r = await fetch("index.php?action=verify_session&token=" + encodeURIComponent(TOKEN)).then(x => x.json());
+      if(!r.ok){
+        _sessKicked = true;
+        TOKEN = ""; ROLE = "";
+        clearSessionAndFill();
+        document.body.classList.remove("role-user");
+        lErr.textContent = "该激活密码已被管理员删除，账号已停用";
+        showLogin();
+      }
+    }catch(_){ /* 网络抖动忽略，下次再查 */ }
+  }, 15000);
+}
+startSessionWatch();
+
+setInterval(() => { if(polling && cardsTabActive) poll(); }, 1500);
+
+/* ===== 开屏（重写）：动画期间悄悄验证登录状态 → 结束直接停在「登录页」或进入主界面（登录优先，不再先进软件再弹登录） ===== */
+function bootSplash(){
+  const verify = new Promise(res => {
+    // 即使本地没有 token 也问服务器：这个 IP 曾勾选"记录账号" → 服务端直接放行（IP 免登，绕开浏览器存储被禁）
+    const ac = new AbortController();
+    const tm = setTimeout(function(){ try{ ac.abort(); }catch(_){} }, 6000);   // 弱网超时保护：6 秒没响应按失败处理，不无限等
+    fetch(API + "?action=verify_session&token=" + encodeURIComponent(TOKEN || ""), {signal: ac.signal})
+      .then(x => x.json()).then(r => {
+        clearTimeout(tm);
+        if(r && r.ok){
+          if(r.token && r.token !== TOKEN){
+            TOKEN = r.token;
+            if(r.role) ROLE = r.role;
+            lsSet("cardkey_token", TOKEN); lsSet("cardkey_role", ROLE);
+          } else if(!ROLE && r.role) ROLE = r.role;
+          res(true);
+        } else res(false);
+      }).catch(() => { clearTimeout(tm); res(false); });
+  });
+  verify.then(ok => {
+    setTimeout(() => {
+      // 收尾：隐藏开屏并根据是否登录决定进主界面还是退回登录页
+      const proceed = (loggedIn) => {
+        const sp = document.getElementById("splash");
+        if(sp) sp.classList.add("hide");
+        setTimeout(() => {
+          if(loggedIn){ try { enterApp(); } catch(e){ console.error("enterApp失败", e); showLogin(); } }
+          else { clearSessionAndFill(); showLogin(); }
+        }, 480);
+      };
+      // 登录态失效但本地有记住的账号 → 静默自动重登（不依赖 IP / 浏览器缓存），成功直接进后台，失败再退回登录页
+      if(!ok){
+        const rmE = lsGet("cardkey_rm_email"), rmP = lsGet("cardkey_rm_pwd"), rmEP = lsGet("cardkey_rm_epwd");
+        if(rmE || rmP){
+          // 自动重登（手机/webview 弱网容易超时失败 → 失败自动重试最多 2 次再退回登录页）
+          const tryRelogin = (n) => {
+            loginPost(rmE, rmEP, rmP, true).then(r => {
+              if(r && r.ok){
+                TOKEN = r.token; ROLE = r.role;
+                lsSet("cardkey_email", rmE);
+                lsSet("cardkey_username", r.username || "");
+                lsSet("cardkey_token", TOKEN); lsSet("cardkey_role", ROLE);
+                try{ sessionStorage.removeItem("cardkey_token"); sessionStorage.removeItem("cardkey_role"); }catch(_){}
+                proceed(true);
+              } else {
+                if(n < 2) setTimeout(function(){ tryRelogin(n + 1); }, 600 * (n + 1));
+                else proceed(false);
+              }
+            }).catch(() => {
+              if(n < 2) setTimeout(function(){ tryRelogin(n + 1); }, 600 * (n + 1));
+              else proceed(false);
+            });
+          };
+          tryRelogin(0);
+          return; // 等异步重登结果
+        }
+      }
+      proceed(ok);
+    }, 2200);
+  });
+}
+bootSplash();
+// 兜底：即便任何异常导致上面未执行，6 秒后强制隐藏开屏并进入登录，避免永远卡在开屏动画
+setTimeout(() => {
+  const sp = document.getElementById("splash");
+  if(sp && !sp.classList.contains("hide")){ sp.classList.add("hide"); clearSessionAndFill(); showLogin(); }
+}, 6000);
+
+/* ===== 实时推送（SSE）：公告 / 网页更新 / APK 版本 变更，无需刷新即收到 ===== */
+function showPushAnn(text, title){
+  const m = document.getElementById("pushAnn-mask");
+  document.getElementById("pushAnn-body").textContent = text;
+  document.getElementById("pushAnn-title").textContent = title || "系统公告";
+  m.style.display = "flex";
+}
+function hidePushAnn(){ const m = document.getElementById("pushAnn-mask"); if(m) m.style.display = "none"; }
+document.getElementById("pushAnn-x").onclick = hidePushAnn;
+document.getElementById("pushAnn-ok").onclick = hidePushAnn;
+
+let _pWeb = Number(lsGet("cardkey_webver_admin") || 0);
+let _pAnn = " ", _pLat = -1;
+function handleAdminPush(st){
+  if(!st) return;
+  if(st.web_ver){ applyWebVer(st.web_ver); }
+  // 只推送「后台公告」（管理员内部）；用户端验证公告按空间隔离，后台一律不读取、不弹"用户端公告预览"
+  if("announce" in st){
+    const a = st.announce || "";
+    if(a !== _pAnn){
+      _pAnn = a;
+      if(a) showPushAnn("📢 " + a, "后台公告");
+    }
+  }
+  if(st.latest && st.latest !== _pLat){
+    _pLat = st.latest;
+    if(typeof loadVersion === "function") loadVersion();
+  }
+}
+(function(){
+  // 不再使用 EventSource 长连接：它会永久占用一个 PHP-FPM 进程，公网抖动下易把登录请求挤成 503/499。
+  // 改为短轮询拉取公告/版本推送，请求结束即释放 worker，把进程让给登录等关键请求。
+  setInterval(() => {
+    fetch(API + "?action=version_check&v=" + (window.__APP_VER__ || 0)).then(x => x.json()).then(async r => {
+      const obj = { web_ver: r.web_ver, latest: r.latest };
+      try{
+        const a1 = await fetch(API + "?action=announce").then(x => x.json());
+        obj.announce = (a1 && a1.announce) || "";
+      }catch(_){}
+      handleAdminPush(obj);
+    }).catch(()=>{});
+  }, 10000);
+})();
+
+/* ===== 开放注册开关（管理员） ===== */
+async function loadRegister(){
+  try {
+    const r = await q('action=get_register');
+    if(!r || !r.ok) return;
+    const open = r.open ? 1 : 0;
+    const seg = document.getElementById('reg-seg');
+    if(seg) seg.querySelectorAll('button').forEach(b => b.classList.toggle('on', b.dataset.v == String(open)));
+  } catch(_){}
+}
+(function(){
+  const seg = document.getElementById('reg-seg');
+  if(seg) seg.querySelectorAll('button').forEach(b => b.onclick = () => {
+    seg.querySelectorAll('button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    const v = b.dataset.v;
+    post('action=set_register', 'open=' + v).then(x => x.json()).then(r => {
+      const out = document.getElementById('reg-out');
+      if(r && r.ok){ out.textContent = v === '1' ? '已开放公开注册' : '已关闭公开注册（仅已有账号可登录）'; }
+      else { out.textContent = (r && r.error) ? r.error : '设置失败'; }
+    }).catch(() => { document.getElementById('reg-out').textContent = '请求失败'; });
+  });
+})();
+
+/* ===== 激活密码：管理员在“更多”里生成（owner 留空，待分发） ===== */
+let AP_UNIT = 'day';
+(function(){
+  const seg = document.getElementById('ap-seg');
+  if(seg) seg.querySelectorAll('button').forEach(b => b.onclick = () => {
+    seg.querySelectorAll('button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on'); AP_UNIT = b.dataset.u;
+  });
+  const mseg = document.getElementById('ap-mu-seg');
+  if(mseg) mseg.querySelectorAll('button').forEach(b => b.onclick = () => {
+    mseg.querySelectorAll('button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    const inp = document.getElementById('ap-mu'); if(inp) inp.value='';
+  });
+  const btn = document.getElementById('ap-btn');
+  if(btn) btn.onclick = async () => {
+    const len = document.getElementById('ap-len').value;
+    const cnt = document.getElementById('ap-count').value;
+    const val = document.getElementById('ap-val').value;
+    if(!cnt || parseInt(cnt,10) < 1){ document.getElementById('ap-out').textContent = '请填写生成数量'; return; }
+    if(AP_UNIT !== 'forever' && (!val || val === '' || parseInt(val,10) < 1)){ document.getElementById('ap-out').textContent = '请填写有效期数值（或选择「永久」）'; return; }
+    const mu = readMU('ap-mu-seg','ap-mu');
+    // type=act：激活密码与卡密彻底分离，只进下方「激活密码列表」，绝不进卡密列表
+    const r = await post('action=generate', 'len='+len+'&count='+cnt+'&value='+val+'&unit='+AP_UNIT+'&max_uses='+mu+'&type=act').then(x => x.json());
+    if(!r.ok){ document.getElementById('ap-out').textContent = '失败：' + (r.error||'未知错误'); return; }
+    document.getElementById('ap-out').textContent = '已生成 ' + r.count + ' 条 ✓ 已加入下方激活密码列表';
+    loadApList();
+  };
+})();
+
+/* ===== 激活密码列表（与卡密彻底分离，仅管理员） ===== */
+async function loadApList(){
+  const el = document.getElementById('ap-list');
+  if(!el) return;
+  el.innerHTML = '加载中…';
+  try{
+    const r = await q('action=list&type=act');
+    if(!r.ok){ el.innerHTML = ''; return; }
+    const cards = r.cards || [];
+    if(!cards.length){ el.innerHTML = '<div class="muted">暂无激活密码（生成的激活密码会显示在这里，不会进入卡密列表）</div>'; return; }
+    el.innerHTML = '<div class="muted" style="font-size:11px;margin-bottom:6px">激活密码共 ' + cards.length + ' 个 · 与卡密互不影响</div>' + cards.map(c =>
+      '<div class="krow"><div class="mono" style="flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="'+escapeHtml(c.card_key)+'">'+escapeHtml(c.card_key)+'</div>' +
+      '<div style="font-size:11px">'+apStatusText(c)+' · '+uCardTime(c)+'</div>' +
+      '<button class="ghost sm" onclick="copyText(\''+escapeHtml(c.card_key)+'\')">复制</button>' +
+      '<button class="ghost sm" style="color:#e5484d" onclick="delAp(\''+escapeHtml(c.card_key)+'\')">删</button></div>'
+    ).join('');
+    // 激活密码剩余时间每秒刷新（激活中=动态倒计时）
+    if(window.__apT) clearInterval(window.__apT);
+    window.__apT = setInterval(() => {
+      const el2 = document.getElementById('ap-list');
+      if(!el2) return;
+      el2.querySelectorAll('[data-uexp]').forEach(el3 => { const e = +el3.dataset.uexp; el3.textContent = (e <= serverNow()) ? '已到期' : cd(e); });
+    }, 1000);
+  }catch(_){ el.innerHTML = ''; }
+}
+// 激活密码状态文案（与卡密分开：未使用 / 已使用），附已用人数
+function apStatusText(c){
+  let s = '';
+  if(c.status === 'unused') s = '<span style="color:var(--sub)">未使用</span>';
+  else if(c.status === 'active') s = '<span style="color:var(--ok)">已使用</span>';
+  else s = stext(c.status);
+  const used = (c.used_list || '').split(',').map(x => x.trim()).filter(Boolean).length;
+  const cap = c.max_uses > 0 ? c.max_uses : '不限';
+  return s + ' <span class="muted">· ' + used + '/' + cap + ' 人</span>';
+}
+async function delAp(key){
+  if(!confirm('确认删除该激活密码？删除后无法再用它登录')) return;
+  const r = await post('action=delete', 'key='+encodeURIComponent(key)).then(x => x.json());
+  if(r.ok){ loadApList(); } else { alert('删除失败：' + (r.error||'未知错误')); }
+}
+
+/* ===== 我的注入产物（普通用户下载自己注入的 APK；管理员看全部） ===== */
+async function loadMyInjected(){
+  const el = document.getElementById('myinj-list');
+  if(!el) return;
+  el.innerHTML = '加载中…';
+  try{
+    const r = await q('action=list_injected');
+    if(!r.ok){ el.innerHTML = '<div class="muted">读取失败：' + (r.error||'') + '</div>'; return; }
+    const items = r.items || [];
+    if(!items.length){ el.innerHTML = '<div class="muted">还没有注入过的 APK（用上方「APK 注入」注入后，会出现在这里）</div>'; return; }
+    el.innerHTML = items.map(it => {
+      const d = new Date((it.ts||0)*1000);
+      const sz = it.size ? (it.size/1048576).toFixed(2)+' MB' : '';
+      const nm = escapeHtml(it.name||'');
+      const owner = (ROLE === 'admin' && it.owner) ? '<div class="muted" style="font-size:11px">归属：'+escapeHtml(it.owner)+'</div>' : '';
+      // 验证标识：验证通过 ✅ / 有警告 ⚠️ / 未验证（旧记录）
+      let vtag = '';
+      if(it.verify_ok === true) vtag = '<span style="color:#2ecc71;font-size:11px">✅ 已验证</span>';
+      else if(it.verify_ok === false) vtag = '<span style="color:#ff6b6b;font-size:11px">⚠️ ' + escapeHtml((it.verify||'未通过').slice(0,60)) + '</span>';
+      return '<div class="krow" style="align-items:center"><div style="min-width:0;flex:1"><div class="mono" style="font-size:12px;word-break:break-all">'+nm+'</div>'+
+        '<div class="muted" style="font-size:11px">'+d.toLocaleString()+' · '+sz+'</div>'+owner+'<div>'+vtag+'</div></div>'+
+        '<a class="ghost sm" href="'+escapeHtml(it.url||'#')+'" data-dl-url="'+escapeHtml(it.url||'')+'" data-dl-name="'+escapeHtml(it.name||'injected.apk')+'" style="white-space:nowrap;flex:0 0 auto">下载</a>'+
+        '<button class="ghost sm" data-repair-inj="'+escapeHtml(it.name||'')+'" style="white-space:nowrap;flex:0 0 auto">修复</button>'+
+        (ROLE === 'admin' ? '<button class="ghost sm" data-del-inj="'+escapeHtml(it.name||'')+'" style="white-space:nowrap;flex:0 0 auto;color:var(--bad)">删</button>' : '')+'</div>';
+    }).join('');
+  }catch(_){ el.innerHTML = '<div class="muted">读取失败</div>'; }
+}
+
+/* ===== APK 注入（后台网页版，走同域 /inject-api 反代 → 注入机 YOUR_SERVER_IP:9090） ===== */
+const INJ_WEB_SERVER = "http://YOUR_SERVER_IP:9090";
+const INJ_JOB_KEY = "cardkey_inj_job";
+let injWebJob = null, injWebOwner = null, injWebAt = null, injWebTimer = null;
+async function injWebGetToken(){
+  const r = await q('action=app_token');
+  if(!r.ok || !r.token) throw new Error(r.error || '获取注入身份失败');
+  return { owner: r.owner, at: r.token };
+}
+function injWebShowHeal(healLog){
+  const el = document.getElementById('inj-web-heal');
+  if(!el) return;
+  if(healLog && healLog.length){
+    el.style.display = 'block';
+    el.innerHTML = '<div style="font-weight:600;margin-bottom:2px">🛠 自动修复过程</div>' + healLog.map(h => '· ' + escapeHtml(h)).join('<br>');
+  } else {
+    el.style.display = 'none'; el.innerHTML = '';
+  }
+}
+function injWebShowResult(r, file){
+  const res = document.getElementById('inj-web-res');
+  const meta = document.getElementById('inj-web-meta');
+  const urlEl = document.getElementById('inj-web-url');
+  const dl = document.getElementById('inj-web-dl');
+  const btn = document.getElementById('inj-web-btn');
+  const rt = document.getElementById('inj-web-retry');
+  if(res) res.style.display = 'block';
+  if(rt) rt.style.display = 'none';
+  if(meta){
+    const nm = (r && r.name) ? r.name : (file && file.name ? file.name.replace(/\.apk$/i, '') + '_加壳版.apk' : '注入成品.apk');
+    const sz = r && r.size ? '（' + (r.size / 1048576).toFixed(2) + ' MB）' : '';
+    const v = (r && r.verify) ? r.verify : '';
+    meta.textContent = (r && r.verify_ok) ? '✅ ' + nm + sz : (r && r.verify !== undefined ? '⚠️ ' + nm + sz : '✅ ' + nm + sz);
+    // 验证结果小字显示
+    let vEl = document.getElementById('inj-web-verify');
+    if(!vEl && urlEl && urlEl.parentNode){
+      vEl = document.createElement('div');
+      vEl.id = 'inj-web-verify';
+      vEl.style.cssText = 'font-size:11px;color:var(--sub);margin-top:4px;word-break:break-all';
+      urlEl.parentNode.insertBefore(vEl, urlEl);
+    }
+    if(vEl){ vEl.textContent = v ? ('📋 ' + v) : ''; }
+  }
+  if(urlEl) urlEl.textContent = r.url || '';
+  if(dl){
+    dl.href = r.url || '#';
+    if(r.url){ dl.setAttribute('data-dl-url', r.url); dl.setAttribute('data-dl-name', r.name || 'injected.apk'); }
+  }
+  const out = document.getElementById('inj-web-out');
+  if(out) out.textContent = (r && r.verify_ok) ? '注入完成，产物验证通过！点击下方下载' : (r && r.verify !== undefined ? '注入完成（⚠️ 产物验证有警告，建议先检查再分发）' : '注入完成！点击下方下载');
+  if(btn){ btn.disabled = false; btn.textContent = '上传并注入'; }
+  loadMyInjected();
+  loadInjRecent();
+  injBeep();
+}
+/* 轮询服务器进度：不依赖 POST 响应（上传完成立即开始），结果/进度/失败原因都从 /progress 取 */
+function injWebPoll(job, file, resumed){
+  const out = document.getElementById('inj-web-out');
+  const bar = document.getElementById('inj-web-bar');
+  const pct = document.getElementById('inj-web-pct');
+  const btn = document.getElementById('inj-web-btn');
+  if(injWebTimer) clearInterval(injWebTimer);
+  if(out && resumed) out.textContent = '已恢复上次注入，服务器处理中…';
+  const t0 = Date.now();
+  injWebTimer = setInterval(() => {
+    fetch(INJ_WEB_SERVER + '/progress?job=' + job).then(x => x.json()).then(pr => {
+      if(!pr || !pr.ok){
+        clearInterval(injWebTimer); injWebTimer = null;
+        localStorage.removeItem(INJ_JOB_KEY);
+        if(out) out.textContent = '任务已过期，请重新上传注入';
+        if(btn){ btn.disabled = false; btn.textContent = '上传并注入'; }
+        return;
+      }
+      if(pr.pct != null){ const p = Math.max(5, pr.pct); if(bar) bar.style.width = p + '%'; if(pct) pct.textContent = p + '%'; }
+      if(pr.msg){
+        const el = Math.floor((Date.now() - t0) / 1000);
+        const mm = Math.floor(el / 60), ss = el % 60;
+        out.textContent = '服务器：' + pr.msg + '（' + (pr.pct || 0) + '%）· 已耗时 ' + mm + '分' + (ss < 10 ? '0' : '') + ss + '秒';
+      }
+      injWebShowHeal(pr.heal_log);
+      if(pr.done){
+        clearInterval(injWebTimer); injWebTimer = null;
+        localStorage.removeItem(INJ_JOB_KEY);
+        if(bar) bar.style.width = '100%';
+        if(pct) pct.textContent = '100%';
+        if(pr.stage === 'error' || pr.final_err){
+          if(out) out.textContent = '❌ 注入失败：' + (pr.final_err || pr.msg || '未知原因');
+          const rt = document.getElementById('inj-web-retry');
+          if(rt){ rt.style.display = 'inline-block'; rt.textContent = '重新注入（自动换方案）'; }
+          if(btn){ btn.disabled = false; btn.textContent = '上传并注入'; }
+          return;
+        }
+        if(pr.url){
+          injWebShowResult({url: pr.url, name: pr.name, size: pr.size, verify_ok: pr.verify_ok, verify: pr.verify}, file);
+        } else {
+          if(out) out.textContent = '注入完成，正在获取下载链接…';
+        }
+      }
+    }).catch(()=>{});
+  }, 1200);
+}
+/* 分块并发上传：8MB/块 × 6 并发，断点续传（先查已收块，只传缺失的），榨满上行带宽 */
+const INJ_CHUNK_SIZE = 4 * 1024 * 1024;
+const INJ_UPLOAD_CONC = 4;
+function injWebUploadChunks(job, owner, at, file, out, bar, pct){
+  // 串行分块 + 断点续传（2026-08-06 v3）：直传断一次全重来（进度归 0）；4 路并发分块有竞态截断。
+  // → 8MB 一块、1 路顺序传：断线后已传块保留在服务器，刷新页面重新选同一文件即自动续传（不归零）。
+  const CH = 8 * 1024 * 1024;
+  const total = Math.max(1, Math.ceil(file.size / CH));
+  let done = new Set();
+  let finished = false;
+  let upSpeed = 0, upLast = 0, upLastT = Date.now();
+  // 已确认收完的字节数（用于进度基座）
+  function doneBytes(){
+    let n = 0;
+    done.forEach(i => n += Math.min(CH, file.size - i * CH));
+    return n;
+  }
+  function render(cur){
+    const now = Date.now();
+    const dt = (now - upLastT) / 1000;
+    if(dt >= 0.3){
+      const inst = (cur - upLast) / 1048576 / dt;
+      upSpeed = upSpeed ? upSpeed * 0.6 + inst * 0.4 : inst;
+      upLast = cur; upLastT = now;
+    }
+    const p = Math.min(100, Math.round(cur * 100 / Math.max(1, file.size)));
+    if(bar) bar.style.width = p + '%';
+    if(pct) pct.textContent = p + '%';
+    out.textContent = '上传中… ' + p + '% · ' + upSpeed.toFixed(1) + ' MB/s · ' + (cur/1048576).toFixed(1) + '/' + (file.size/1048576).toFixed(1) + ' MB · 第 ' + (done.size + 1) + '/' + total + ' 块';
+  }
+  function nextMissing(){
+    for(let i = 0; i < total; i++) if(!done.has(i)) return i;
+    return -1;
+  }
+  function failEnd(msg){
+    finished = true;
+    out.textContent = msg;
+    // 保留 INJ_JOB_KEY（已传块在服务器，刷新后选同一文件续传）
+    try{ localStorage.setItem(INJ_JOB_KEY, JSON.stringify({job: job, owner: owner, at: at, name: file.name})); }catch(_){}
+    if(typeof btn !== 'undefined' && btn){ btn.disabled = false; btn.textContent = '上传并注入'; }
+  }
+  function sendOne(idx, retry){
+    const start = idx * CH;
+    const end = Math.min(file.size, start + CH);
+    const blob = file.slice(start, end);
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', INJ_WEB_SERVER + '/upload?job=' + job + '&owner=' + encodeURIComponent(owner) + '&at=' + encodeURIComponent(at) + '&idx=' + idx + '&total=' + total + '&total_bytes=' + file.size);
+    xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+    // 块内实时进度：字节级刷新，进度条不卡 0%
+    xhr.upload.onprogress = (e) => {
+      if(e.lengthComputable && !finished) render(doneBytes() + (end - start) * (e.loaded / Math.max(1, e.total)));
+    };
+    xhr.onload = () => {
+      if(finished) return;
+      let body = {};
+      try { body = JSON.parse(xhr.responseText || '{}'); } catch (_) {}
+      if(xhr.status === 200 && body.ok){
+        done.add(idx);
+        render(doneBytes());
+        const next = nextMissing();
+        if(next === -1){
+          finished = true;
+          out.textContent = '上传完成，服务器处理中…';
+          injWebPoll(job, file, false);
+          return;
+        }
+        sendOne(next, 0);   // 顺序传下一块
+        return;
+      }
+      if(body.fatal){ failEnd('⚠️ ' + (body.error || '上传失败，请重新选择文件')); return; }
+      if(body.inject_failed){ finished = true; out.textContent = '上传完成，但注入失败，正在展示结果…'; injWebPoll(job, file, false); return; }
+      retryFail(idx, retry);
+    };
+    xhr.onerror = () => { if(!finished) retryFail(idx, retry); };
+    xhr.send(blob);
+  }
+  // 块失败：重试 2 次后停止，提示刷新续传（不从头传）
+  function retryFail(idx, retry){
+    if(retry < 2){ out.textContent = '⚠️ 第 ' + (idx+1) + '/' + total + ' 块传输中断，自动重试…'; setTimeout(() => sendOne(idx, retry + 1), 1200); return; }
+    failEnd('⚠️ 网络不稳定，第 ' + (idx+1) + '/' + total + ' 块中断。已传 ' + (doneBytes()/1048576).toFixed(1) + ' MB —— 刷新页面后重新选择同一文件，会自动从断点续传（不重传已传部分）。');
+  }
+  function start(){
+    const n0 = doneBytes();
+    if(n0 > 0) out.textContent = '续传中… 已有 ' + (n0/1048576).toFixed(1) + ' MB 已传，从断点继续…';
+    const first = nextMissing();
+    if(first === -1){
+      finished = true;
+      out.textContent = '上传完成，服务器处理中…';
+      injWebPoll(job, file, false);
+      return;
+    }
+    render(n0);
+    sendOne(first, 0);
+    // 无进展兜底：5 分钟完全没进度 → 提示刷新续传
+    setTimeout(() => {
+      if(finished) return;
+      if(Date.now() - upLastT > 300000){
+        failEnd('⚠️ 长时间无传输进度（网络可能已断开）。已传 ' + (doneBytes()/1048576).toFixed(1) + ' MB —— 刷新页面后重新选择同一文件，会自动从断点续传。');
+      }
+    }, 310000);
+  }
+  // 断点续传：先查服务端已收块，跳过已传部分
+  fetch(INJ_WEB_SERVER + '/chunks?job=' + job + '&owner=' + encodeURIComponent(owner) + '&at=' + encodeURIComponent(at))
+    .then(x => x.json()).then(r => {
+      if(r && r.ok && r.chunks) r.chunks.forEach(c => { const n = Number(c); if(n >= 0 && n < total) done.add(n); });
+      start();
+    }).catch(() => start());
+}
+function injWebRun(){
+  const f = document.getElementById('inj-web-file');
+  const out = document.getElementById('inj-web-out');
+  const bar = document.getElementById('inj-web-bar');
+  const pct = document.getElementById('inj-web-pct');
+  const res = document.getElementById('inj-web-res');
+  const btn = document.getElementById('inj-web-btn');
+  const rt = document.getElementById('inj-web-retry');
+  if(rt) rt.style.display = 'none';
+  if(!f || !f.files || !f.files[0]){ out.textContent = '请先选择 APK 文件'; return; }
+  const file = f.files[0];
+  if(!/\.apk$/i.test(file.name)){ out.textContent = '仅支持 .apk 文件'; return; }
+  if(btn){ btn.disabled = true; btn.textContent = '注入中…'; }
+  if(res) res.style.display = 'none';
+  out.textContent = '正在获取注入身份…';
+  injWebGetToken().then(id => {
+    // 断点续传：若服务器存在未完成的 received 任务（上次断线留下的），复用其 job 继续传，
+    // /chunks 会自动跳过已收块，不重传已传部分（进度不归零）
+    let saved = null;
+    try{ saved = JSON.parse(localStorage.getItem(INJ_JOB_KEY) || 'null'); }catch(_){}
+    const resumeCheck = (saved && saved.job)
+      ? fetch(INJ_WEB_SERVER + '/progress?job=' + saved.job).then(x => x.json()).then(pr =>
+          (pr && pr.ok && !pr.done && pr.stage === 'received') ? saved.job : null
+        ).catch(() => null)
+      : Promise.resolve(null);
+    resumeCheck.then(resumed => {
+      const job = resumed || ('w_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8));
+      injWebJob = job; injWebOwner = id.owner; injWebAt = id.at;
+      try{ localStorage.setItem(INJ_JOB_KEY, JSON.stringify({job: job, owner: id.owner, at: id.at, name: file.name})); }catch(_){}
+      if(resumed) out.textContent = '检测到未完成的上传，正在从断点续传（跳过已传块）…';
+      // 串行分块 + 断点续传：8MB 一块顺序传，断了刷新后重新选同一文件自动续传
+      injWebUploadChunks(job, id.owner, id.at, file, out, bar, pct);
+      if(btn){ btn.disabled = true; btn.textContent = '注入中…'; }
+    });
+  }).catch(e => {
+    out.textContent = (e && e.message) || '获取注入身份失败';
+    if(btn){ btn.disabled = false; btn.textContent = '上传并注入'; }
+  });
+}
+/* 失败一键重试：复用服务端保留的源文件，重新跑自愈链（不重新上传） */
+async function injWebRetry(){
+  const out = document.getElementById('inj-web-out');
+  const bar = document.getElementById('inj-web-bar');
+  const pct = document.getElementById('inj-web-pct');
+  const rt = document.getElementById('inj-web-retry');
+  if(!injWebJob){ out.textContent = '没有可重试的任务，请重新上传'; return; }
+  if(rt){ rt.disabled = true; rt.textContent = '重试中…'; }
+  out.textContent = '正在重新注入（复用原文件，自动换方案）…';
+  try{
+    const id = await injWebGetToken();
+    injWebOwner = id.owner; injWebAt = id.at;
+    const r = await fetch(INJ_WEB_SERVER + '/retry?job=' + injWebJob + '&owner=' + encodeURIComponent(id.owner) + '&at=' + encodeURIComponent(id.at), {method: 'POST'}).then(x => x.json());
+    if(!r.ok){
+      out.textContent = '重试失败：' + (r.error || '未知原因');
+      if(rt){ rt.disabled = false; rt.textContent = '重新注入（自动换方案）'; }
+      return;
+    }
+    if(bar) bar.style.width = '2%';
+    if(pct) pct.textContent = '2%';
+    injWebPoll(injWebJob, null, false);
+  }catch(e){
+    out.textContent = '重试请求失败：' + ((e && e.message) || e);
+    if(rt){ rt.disabled = false; rt.textContent = '重新注入（自动换方案）'; }
+  }
+}
+/* ===== 【重新修复】产物（2026-08-11）：所有登录账号可用，只能修自己 owner 的产物 ===== */
+let injRepairTimer = null;
+async function repairInj(name, btn){
+  try{
+    const id = await injWebGetToken();
+    const job = 'jr_' + Date.now();
+    const r = await fetch(INJ_WEB_SERVER + '/repair?job=' + job + '&name=' + encodeURIComponent(name)
+      + '&owner=' + encodeURIComponent(id.owner) + '&at=' + encodeURIComponent(id.at), {method: 'POST'}).then(x => x.json());
+    if(!r.ok){
+      if(btn){ btn.disabled = false; btn.textContent = '修复'; }
+      alert('修复请求失败：' + (r.error || '未知原因'));
+      return;
+    }
+    if(btn){ btn.disabled = true; btn.textContent = '修复中…'; }
+    repairPoll(job, name);
+  }catch(e){
+    if(btn){ btn.disabled = false; btn.textContent = '修复'; }
+    alert('修复请求失败：' + ((e && e.message) || e));
+  }
+}
+/* 修复进度轮询（复用 /progress [PROGRESS] 机制），在产物列表上方显示进度条 */
+function repairPoll(job, name){
+  const el = document.getElementById('myinj-list');
+  if(!el) return;
+  let box = document.getElementById('repair-progress');
+  if(!box){
+    box = document.createElement('div');
+    box.id = 'repair-progress';
+    box.style.cssText = 'margin-bottom:10px;padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.05);font-size:12px;word-break:break-all';
+    el.parentNode.insertBefore(box, el);
+  }
+  box.style.display = 'block';
+  box.innerHTML = '🔧 正在修复 <b>' + escapeHtml(name) + '</b>，请勿关闭页面…';
+  if(injRepairTimer) clearInterval(injRepairTimer);
+  injRepairTimer = setInterval(() => {
+    fetch(INJ_WEB_SERVER + '/progress?job=' + job).then(x => x.json()).then(pr => {
+      if(!pr || !pr.ok){
+        clearInterval(injRepairTimer); injRepairTimer = null;
+        box.innerHTML = '任务已过期，请重新点击修复';
+        return;
+      }
+      let html = '🔧 修复进度：<b>' + (pr.pct||0) + '%</b> ' + escapeHtml(pr.msg || '');
+      if(pr.heal_log && pr.heal_log.length) html += '<div style="color:var(--sub);margin-top:4px">🛠 ' + pr.heal_log.map(escapeHtml).join('<br>🛠 ') + '</div>';
+      if(pr.final_err) html += '<div style="color:#ff6b6b;margin-top:4px">' + escapeHtml(pr.final_err) + '</div>';
+      box.innerHTML = html;
+      if(pr.done){
+        clearInterval(injRepairTimer); injRepairTimer = null;
+        if(pr.stage === 'error'){
+          box.innerHTML = '❌ 修复失败：' + escapeHtml(pr.final_err || pr.msg || '未知原因') + '（失败会自动保留源包，可稍后再点修复）';
+        } else {
+          box.innerHTML = '✅ 修复完成：<a class="ghost sm" href="'+escapeHtml(pr.url||'#')+'" data-dl-url="'+escapeHtml(pr.url||'')+'" data-dl-name="'+escapeHtml(pr.name||'injected.apk')+'">下载新包</a> <span class="muted">旧包已自动替换</span>';
+          setTimeout(()=>{ try{ box.style.display = 'none'; }catch(_){} }, 10000);
+        }
+        loadMyInjected(); loadInjRecent();
+      }
+    }).catch(()=>{});
+  }, 1500);
+}
+/* 页面加载：恢复未完成的注入任务（退出页面不再丢失进度，无需重新上传） */
+(function(){
+  try{
+    const saved = JSON.parse(localStorage.getItem(INJ_JOB_KEY) || 'null');
+    if(saved && saved.job){
+      fetch(INJ_WEB_SERVER + '/progress?job=' + saved.job).then(x => x.json()).then(pr => {
+        if(!pr || !pr.ok){ localStorage.removeItem(INJ_JOB_KEY); return; }
+        injWebJob = saved.job; injWebOwner = saved.owner || ''; injWebAt = saved.at || '';
+        if(pr.done){
+          localStorage.removeItem(INJ_JOB_KEY);
+          if(pr.stage === 'error' || pr.final_err){
+            const out = document.getElementById('inj-web-out');
+            if(out) out.textContent = '❌ 上次注入失败：' + (pr.final_err || pr.msg || '未知原因');
+            const rt = document.getElementById('inj-web-retry');
+            if(rt){ rt.style.display = 'inline-block'; rt.textContent = '重新注入（自动换方案）'; }
+          } else if(pr.url){
+            injWebShowResult({url: pr.url, name: pr.name, size: pr.size, verify_ok: pr.verify_ok, verify: pr.verify}, null);
+          }
+        } else {
+          // 恢复进行中的任务，继续轮询显示阶段
+          injWebPoll(saved.job, null, true);
+        }
+      }).catch(()=>{});
+    }
+  }catch(_){}
+})();
+/* 最近注入记录（注入卡片内直接显示） */
+async function loadInjRecent(){
+  const el = document.getElementById('inj-web-recent');
+  if(!el) return;
+  try{
+    const r = await q('action=list_injected');
+    if(!r.ok || !r.items || !r.items.length){ el.innerHTML = ''; return; }
+    const items = r.items.slice(0, 5);
+    el.innerHTML = '<div class="ttl" style="font-size:13px;margin-bottom:6px">最近注入（共 ' + r.items.length + ' 个）</div>' + items.map(it => {
+      const d = new Date((it.ts||0)*1000);
+      const sz = it.size ? (it.size/1048576).toFixed(2)+' MB' : '';
+      const nm = escapeHtml(it.name||'');
+      return '<div class="krow"><div style="min-width:0;flex:1"><div class="mono" style="font-size:12px;word-break:break-all">'+nm+'</div><div class="muted" style="font-size:11px">'+d.toLocaleString()+' · '+sz+'</div></div>'+
+        '<a class="ghost sm" href="'+escapeHtml(it.url||'#')+'" data-dl-url="'+escapeHtml(it.url||'')+'" data-dl-name="'+escapeHtml(it.name||'injected.apk')+'" style="white-space:nowrap;flex:0 0 auto">下载</a></div>';
+    }).join('');
+  }catch(_){ el.innerHTML = ''; }
+}
+/* 下载 APK：XHR 显示实时速度与进度，完成后自动保存（支持大文件） */
+function injWebDownload(url, name){
+  if(!url) return;
+  const out = document.getElementById('inj-web-out');
+  const bar = document.getElementById('inj-web-bar');
+  const pct = document.getElementById('inj-web-pct');
+  if(bar) bar.style.width = '0%';
+  if(pct) pct.textContent = '0%';
+  if(out) out.textContent = '下载中… 0%';
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', url, true);
+  xhr.responseType = 'blob';
+  let dlLast = 0, dlLastT = Date.now(), dlSpeed = 0;
+  xhr.onprogress = (e) => {
+    if(!e.lengthComputable) return;
+    const now = Date.now();
+    const dt = (now - dlLastT) / 1000;
+    if(dt >= 0.3){
+      const inst = (e.loaded - dlLast) / 1048576 / dt;
+      dlSpeed = dlSpeed ? dlSpeed * 0.6 + inst * 0.4 : inst;
+      dlLast = e.loaded; dlLastT = now;
+    }
+    const p = Math.round(e.loaded * 100 / e.total);
+    if(bar) bar.style.width = p + '%';
+    if(pct) pct.textContent = p + '%';
+    if(out) out.textContent = '下载中… ' + p + '% · ' + dlSpeed.toFixed(1) + ' MB/s';
+  };
+  xhr.onload = () => {
+    if(xhr.status === 200 && xhr.response){
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(xhr.response);
+      a.download = name || 'download.apk';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+      if(out) out.textContent = '✅ 下载完成，已保存：' + (name || '');
+      if(bar) bar.style.width = '100%';
+      if(pct) pct.textContent = '100%';
+    } else {
+      if(out) out.textContent = '下载失败（HTTP ' + xhr.status + '）';
+    }
+  };
+  xhr.onerror = () => { if(out) out.textContent = '下载失败：网络错误'; };
+  xhr.send();
+}
+/* 下载按钮事件委托（结果区 / 我的产物 / 最近注入 通用）：data-dl-url / data-dl-name
+   2026-08-08 改为直接打开新标签页：大 APK(几百MB) 走浏览器原生下载流式写盘，
+   不再用 XHR 拉进内存（629MB 会卡死手机浏览器 → 点了没反应）。 */
+document.addEventListener('click', function(e){
+  const t = e.target && e.target.closest ? e.target.closest('[data-dl-url]') : null;
+  if(t){
+    e.preventDefault();
+    const u = t.getAttribute('data-dl-url');
+    if(u) window.open(u, '_blank');
+  }
+});
+/* 注入完成提示音（极简短哔，Web Audio 生成，无需音频文件） */
+function injBeep(){
+  try{
+    var C = window.AudioContext || window.webkitAudioContext;
+    if(!C) return;
+    var ctx = new C();
+    var o = ctx.createOscillator(), g = ctx.createGain();
+    o.connect(g); g.connect(ctx.destination);
+    o.frequency.value = 880; o.type = 'sine';
+    g.gain.setValueAtTime(0.12, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+    o.start(); o.stop(ctx.currentTime + 0.5);
+  }catch(_){}
+}
+(function(){
+  const btn = document.getElementById('inj-web-btn');
+  if(btn) btn.onclick = injWebRun;
+  const rt = document.getElementById('inj-web-retry');
+  if(rt) rt.onclick = injWebRetry;
+  const cp = document.getElementById('inj-web-copy');
+  if(cp) cp.onclick = () => {
+    const u = document.getElementById('inj-web-url');
+    if(u && u.textContent){ copyText(u.textContent); cp.textContent = '已复制'; setTimeout(() => cp.textContent = '复制链接', 1500); }
+  };
+  const fi = document.getElementById('inj-web-file');
+  if(fi) fi.addEventListener('change', () => {
+    const o = document.getElementById('inj-web-out');
+    if(o && fi.files && fi.files[0]) o.textContent = '已选：' + fi.files[0].name + '（' + (fi.files[0].size / 1048576).toFixed(2) + ' MB）——点「上传并注入」开始';
+    else if(o) o.textContent = '';
+  });
+})();
+
+/* ===== 注入实时状态（管理员）：每 5 秒轮询谁在用注入 ===== */
+async function pollInjLive(){
+  const el = document.getElementById('inj-live');
+  if(!el) return;
+  try{
+    const r = await q('action=inject_status');
+    const b = el.querySelector('.tx b'), s = el.querySelector('.tx span');
+    if(!r.ok || r.active === -1){
+      el.style.display = 'flex'; el.className = 'inj-live admin-only off';
+      b.textContent = '注入服务：离线';
+      s.textContent = r.note || '无法连接注入服务器';
+      return;
+    }
+    if(r.active > 0){
+      const j = (r.jobs && r.jobs[0]) || {};
+      const who = j.owner || '有用户';
+      const extra = r.active > 1 ? ' · 还有 ' + (r.active - 1) + ' 个任务排队' : '';
+      el.style.display = 'flex'; el.className = 'inj-live admin-only busy';
+      b.textContent = '注入功能正在使用中';
+      s.textContent = who + ' 正在注入（' + (j.pct || 0) + '% · ' + (j.msg || '处理中') + '）' + extra;
+    } else {
+      el.style.display = 'flex'; el.className = 'inj-live admin-only idle';
+      b.textContent = '注入服务：空闲';
+      s.textContent = '当前没有用户注入';
+    }
+  }catch(_){}
+}
+(function(){ pollInjLive(); setInterval(pollInjLive, 5000); })();
+
+/* 验证端远程配置（免注入推送） */
+function scLoad(){
+  const owner = myEmail();
+  if(!owner) return;
+  q('action=shell_cfg&owner=' + encodeURIComponent(owner)).then(r => {
+    if(!r.ok || !r.cfg) return;
+    const c = r.cfg;
+    if(c.title) document.getElementById('sc-title').value = c.title;
+    if(c.theme) document.querySelectorAll('#sc-theme button').forEach(b => b.classList.toggle('on', b.dataset.t === c.theme));
+    if(c.qq) document.getElementById('sc-qq').value = c.qq;
+  }).catch(()=>{});
+}
+document.getElementById('sc-save').onclick = async () => {
+  const g = document.getElementById('sc-global');
+  // 2026-08-07 审计修复：shell_cfg 保存分支要求 POST（后端判 REQUEST_METHOD==='POST'），
+  // 原用 GET(q) 调用会走"读配置"分支 → 前端提示"已保存"但实际从未写入。改用 post()。
+  const r = await post('action=shell_cfg',
+    'title=' + encodeURIComponent(document.getElementById('sc-title').value.trim())
+    + '&theme=' + encodeURIComponent((document.querySelector('#sc-theme button.on') || {}).dataset.t || 'dark')
+    + '&qq=' + encodeURIComponent(document.getElementById('sc-qq').value.trim())
+    + '&global=' + (g && g.checked ? '1' : '0')).then(x => x.json());
+  document.getElementById('sc-out').textContent = r.ok ? '✅ 已保存，所有用户下次打开验证端自动生效' : ('失败：' + (r.error || ''));
+};
+document.querySelectorAll('#sc-theme button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('#sc-theme button').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+});
+
+/* ===== 销售统计（管理员）：近 30 天柱状图 + 汇总 ===== */
+async function loadStats(){
+  try{
+    const r = await q('action=stats&days=30');
+    if(!r.ok) return;
+    document.getElementById('st-total').textContent = r.total;
+    document.getElementById('st-active').textContent = r.active;
+    document.getElementById('st-unused').textContent = r.unused;
+    drawStatsChart(r.days || []);
+    document.getElementById('st-hint').textContent = '蓝 = 生成 · 绿 = 激活（近 30 天）';
+  }catch(_){}
+}
+function drawStatsChart(days){
+  const cv = document.getElementById('st-chart');
+  if(!cv) return;
+  const ctx = cv.getContext('2d');
+  // 防御：统计 tab 首次绘制时容器可能尚未完成布局，offsetWidth 取到 0/异常 → 回退到父容器宽度或默认值，避免图表空白
+  const W = cv.width = (cv.offsetWidth || (cv.parentElement && cv.parentElement.clientWidth) || 320), H = 180;
+  if(W < 200) cv.width = 320;
+  cv.height = H;
+  ctx.clearRect(0,0,W,H);
+  let max = 1;
+  days.forEach(d => { max = Math.max(max, d.gen, d.act); });
+  const bw = Math.max(2, (W - 60) / Math.max(1, days.length) / 3);
+  const step = Math.max(1, Math.ceil(days.length / 18));
+  days.forEach((d, i) => {
+    const x = 40 + i * (W - 60) / Math.max(1, days.length);
+    const hg = (d.gen / max) * (H - 50), ha = (d.act / max) * (H - 50);
+    ctx.fillStyle = '#378ADD'; ctx.fillRect(x, H - 20 - hg, bw, hg);
+    ctx.fillStyle = '#1D9E75'; ctx.fillRect(x + bw, H - 20 - ha, bw, ha);
+    if(i % step === 0){
+      ctx.fillStyle = '#787d88'; ctx.font = '10px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText(d.day, x + bw, H - 6);
+    }
+  });
+  ctx.fillStyle = '#787d88'; ctx.font = '10px sans-serif'; ctx.textAlign = 'right';
+  ctx.fillText(String(max), 36, 16);
+}
+/* 清理到期卡（管理员） */
+document.getElementById('st-cleanup').onclick = async () => {
+  if(!confirm('确认删除所有"已到期/已销毁/已作废"状态的卡记录？此操作不可恢复！')) return;
+  const r = await q('action=cleanup_expired&confirm=1');
+  alert(r.ok ? ('已清理 ' + r.deleted + ' 条记录') : ('失败：' + (r.error || '')));
+  loadStats(); renderCards(true);
+};
+/* 通知设置（激活邮件提醒） */
+async function loadNotify(){
+  try{
+    const r = await q('action=get_notify');
+    if(!r.ok) return;
+    document.getElementById('nt-on').checked = !!r.notify_activate;
+    if(r.notify_email) document.getElementById('nt-email').value = r.notify_email;
+    const sc = document.getElementById('nt-scope');
+    if(sc) sc.textContent = (r.scope === '个人') ? '（发给你的邮箱：' + (r.notify_email || r.owner || '') + '）' : '（管理员全局收件箱）';
+  }catch(_){}
+}
+document.getElementById('nt-save').onclick = async () => {
+  const on = document.getElementById('nt-on').checked ? '1' : '0';
+  const email = document.getElementById('nt-email').value.trim();
+  const r = await q('action=set_notify&on=' + on + '&email=' + encodeURIComponent(email));
+  const out = document.getElementById('nt-out');
+  out.textContent = r.ok ? '✅ 已保存' : ('失败：' + (r.error || ''));
+};
+/* 操作日志（管理员） */
+async function loadOpLog(){
+  const el = document.getElementById('oplog-list');
+  if(!el) return;
+  try{
+    const r = await q('action=oplog_list');
+    if(!r.ok || !r.items || !r.items.length){ el.innerHTML = '<div class="muted">暂无操作记录</div>'; return; }
+    el.innerHTML = r.items.map(it => {
+      const d = new Date((it.ts || 0) * 1000);
+      return '<div class="krow"><div style="min-width:0;flex:1"><div style="font-size:12px">' + escapeHtml(it.action || '') + ' <span class="muted">' + escapeHtml(it.detail || '') + '</span></div>' +
+        '<div class="muted" style="font-size:11px">' + d.toLocaleString() + ' · ' + escapeHtml(it.who || '') + '</div></div></div>';
+    }).join('');
+  }catch(_){}
+}
+/* 产物删除（管理员）：事件委托 */
+document.addEventListener('click', function(e){
+  const t = e.target && e.target.closest ? e.target.closest('[data-del-inj]') : null;
+  if(t){
+    const name = t.getAttribute('data-del-inj');
+    if(!name) return;
+    if(!confirm('删除该注入产物？下载文件将一并删除（不可恢复）。\n' + name)) return;
+    q('action=injected_delete&name=' + encodeURIComponent(name)).then(r => {
+      alert(r.ok ? '已删除' : ('失败：' + (r.error || '')));
+      loadMyInjected(); loadInjRecent();
+    });
+  }
+  // 【重新修复】（所有登录账号）：用保留的源包重注入一版并替换旧包
+  const rt = e.target && e.target.closest ? e.target.closest('[data-repair-inj]') : null;
+  if(rt){
+    const name = rt.getAttribute('data-repair-inj');
+    if(!name) return;
+    if(!confirm('重新修复该产物？\n将用保留的源包重新注入一版（最新壳模板+自动修复），完成后新包直接替换旧包，磁盘上只留最新一个。\n大包约需 10-60 分钟，期间可关页面，进度会保留。\n\n' + name)) return;
+    repairInj(name, rt);
+  }
+});
+
+/* ===== 系统自检（管理员）：一键体检双机/数据库/注入服务/磁盘 ===== */
+async function runSelfCheck(){
+  const out = document.getElementById('selfcheck-out');
+  const btn = document.getElementById('selfcheck-btn');
+  if(btn){ btn.disabled = true; btn.textContent = '体检中…'; }
+  if(out) out.innerHTML = '<div class="muted">正在体检（约 3-5 秒）…</div>';
+  try{
+    const r = await q('action=self_check');
+    if(!r.ok || !r.items){ throw new Error(r.error || '自检接口异常'); }
+    const rows = r.items.map(it => {
+      const ok = !!it.ok;
+      const cls = ok ? '#22c55e' : '#ff5d5d';
+      const ic = ok ? '✅' : '❌';
+      return '<div style="display:flex;gap:8px;align-items:flex-start;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.05);margin-bottom:6px">' +
+        '<div style="color:' + cls + ';flex:0 0 auto">' + ic + '</div>' +
+        '<div style="min-width:0;flex:1"><div style="font-size:13px;font-weight:600">' + escapeHtml(it.name || '') + '</div>' +
+        '<div style="font-size:11px;color:var(--sub);word-break:break-all;margin-top:2px">' + escapeHtml(it.detail || '') + '</div></div></div>';
+    }).join('');
+    const bad = r.bad || 0;
+    const head = bad === 0
+      ? '<div style="color:#22c55e;font-weight:600;margin-bottom:8px">✅ 全部正常（' + r.items.length + ' 项检查通过）</div>'
+      : '<div style="color:#ff5d5d;font-weight:600;margin-bottom:8px">⚠️ 发现 ' + bad + ' 项异常，请尽快处理：</div>';
+    out.innerHTML = head + rows + '<div class="muted" style="font-size:11px;margin-top:6px">检查时间：' + new Date().toLocaleString() + '</div>';
+  }catch(e){
+    if(out) out.innerHTML = '<div style="color:#ff5d5d">自检失败：' + escapeHtml((e && e.message) || e) + '</div>';
+  }
+  if(btn){ btn.disabled = false; btn.textContent = '🩺 再次体检'; }
+}
+(function(){
+  const sb = document.getElementById('selfcheck-btn');
+  if(sb) sb.onclick = runSelfCheck;
+})();
+
+/* ===== 用户管理（管理员） ===== */
+function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function copyText(t){
+  try { if(navigator.clipboard) navigator.clipboard.writeText(t); } catch(_) {}
+  try { const ta=document.createElement('textarea'); ta.value=t; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); } catch(_) {}
+}
+function fmtDate(ts){ if(!ts) return '—'; try { const d=new Date(ts*1000); const p=n=>String(n).padStart(2,'0'); return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes()); } catch(_){ return String(ts); } }
+function umLine(label, val, copy){
+  return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><div style="flex:1"><div class="muted" style="font-size:11px">'+escapeHtml(label)+'</div><div class="mono" style="word-break:break-all">'+escapeHtml(val==null?'':val)+'</div></div>' + (copy?'<button class="ghost sm" onclick="copyText(\''+escapeHtml(val==null?'':val)+'\')">复制</button>':'') + '</div>';
+}
+function readMU(segId, inputId){
+  const inp = document.getElementById(inputId);
+  const custom = (inp && inp.value !== '' && inp.value != null) ? parseInt(inp.value,10) : NaN;
+  if(!isNaN(custom)) return Math.max(0, custom);
+  const seg = document.getElementById(segId);
+  const on = seg ? seg.querySelector('button.on') : null;
+  return on ? parseInt(on.dataset.mu,10) : 1;
+}
+async function deleteUser(email){
+  if(!confirm('确定删除账户 '+email+' 吗？ 将彻底清除：注册信息、他生成的卡密、他当前的登录会话。 此操作不可恢复，删除后该用户必须重新注册。')) return;
+  const r = await post('action=delete_user', 'email='+encodeURIComponent(email)+'&confirm=1').then(x => x.json());
+  if(!r.ok){ alert('删除失败：'+(r.error||'')); return; }
+  alert('已删除账户 '+email);
+  document.getElementById('um-mask').classList.remove('show');
+  loadUsers();
+}
+async function delUserCard(email, key){
+  if(!confirm('确定删除这张卡密 '+key+' 吗？\n删除后该卡立即失效，不可恢复。')) return;
+  const r = await post('action=user_card_delete', 'email='+encodeURIComponent(email)+'&key='+encodeURIComponent(key)).then(x => x.json());
+  if(!r.ok){ alert('删除失败：'+(r.error||'')); return; }
+  openUser(email);
+}
+let __users = [];
+async function loadUsers(){
+  const box = document.getElementById('um-list');
+  try {
+    const r = await q('action=list_users');
+    if(!r.ok){ box.innerHTML = '<div class="muted">加载失败：'+(r.error||'')+'</div>'; return; }
+    __users = r.users || [];
+    const c = document.getElementById('um-count'); if(c) c.textContent = '共 '+__users.length+' 人';
+    renderUserList(document.getElementById('um-search').value);
+  } catch(e){ box.innerHTML = '<div class="muted">加载失败：'+(e&&e.message?e.message:'网络错误')+'</div>'; }
+}
+function renderUserList(kw){
+  const box = document.getElementById('um-list');
+  kw = (kw||'').trim().toLowerCase();
+  const f = kw ? __users.filter(u => (u.email+'').toLowerCase().includes(kw) || (u.username+'').toLowerCase().includes(kw)) : __users;
+  if(!f.length){ box.innerHTML = '<div class="muted">'+(__users.length?'无匹配用户':'暂无用户')+'</div>'; return; }
+  // 顶部固定"共享空间"入口（123123 共享账号生成的卡，管理员穿透查看）
+  let html = '<div class="krow" data-email="__shared__" style="cursor:pointer;border:1px dashed var(--line)"><div class="mono" style="flex:1">🔗 共享空间（123123 登录生成的卡）</div><div style="font-size:12px;color:var(--sub)">点击查看</div></div>';
+  html += f.map(u =>
+    '<div class="krow" data-email="'+escapeHtml(u.email)+'" style="cursor:pointer"><div class="mono" style="flex:1">'+escapeHtml(u.email)+(u.online?' <span style="color:#2ecc71;font-size:11px">●在线</span>':'')+'</div><div style="font-size:12px;color:var(--sub)">'+escapeHtml(u.username||'')+'</div></div>'
+  ).join('');
+  box.innerHTML = html;
+  box.querySelectorAll('.krow').forEach(row => row.onclick = () => openUser(row.dataset.email));
+}
+// 用户详情卡密时间：激活中=动态倒计时；未激活/永久=固定文案（修复"一直显示1天不变"）
+function uCardTime(c){
+  if(c.status === 'active'){
+    if(c.is_permanent) return '永久';
+    const exp = c.expires_at || 0;
+    return '<span data-uexp="' + exp + '">' + (exp <= serverNow() ? '已到期' : cd(exp)) + '</span>';
+  }
+  return c.is_permanent ? '永久' : (c.validity_label || '—');
+}
+async function openUser(email){
+  const r = await q('action=user_detail&email='+encodeURIComponent(email));
+  if(!r.ok){ alert('加载失败：'+(r.error||'')); return; }
+  const u = r.user || {}, cards = r.cards || [];
+  let html = '';
+  html += umLine('邮箱', u.email, true);
+  html += umLine('用户名', u.username||'');
+  html += umLine('注册时间', fmtDate(u.created));
+  html += umLine('状态', (u.status==1?'正常':'停用') + (u.online ? ' · 在线' : ''));
+  html += umLine('登录密码', u.pass_plain||'(未记录)', true);
+  html += umLine('使用的激活密码', u.card_key||'(未记录)', true);
+  html += '<div class="ttl" style="margin:14px 0 8px">他生成的卡密（'+cards.length+'）</div>';
+  if(cards.length){
+    html += '<div class="keylist">'+cards.map(c =>
+      '<div class="krow" style="flex-direction:column;align-items:stretch;gap:6px"><div class="mono" style="word-break:break-all">'+escapeHtml(c.card_key)+'</div><div style="display:flex;align-items:center;gap:10px;font-size:11px;color:var(--sub);flex-wrap:wrap">'+stext(c.status)+' · '+uCardTime(c)+'<span style="flex:1"></span><button class="ghost sm" onclick="copyText(\''+escapeHtml(c.card_key)+'\')">复制</button><button class="ghost sm" style="color:#e5484d" onclick="delUserCard(\''+escapeHtml(u.email)+'\',\''+escapeHtml(c.card_key)+'\')">删除</button></div></div>'
+    ).join('')+'</div>';
+  } else {
+    html += '<div class="muted">该用户尚未生成卡密</div>';
+  }
+  html += '<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line)"><button class="act" style="background:#e5484d;color:#fff;width:100%" id="um-del">删除账户（彻底清除，不可恢复）</button></div>';
+  document.getElementById('um-detail').innerHTML = html;
+  document.getElementById('um-mask').classList.add('show');
+  const delBtn = document.getElementById('um-del');
+  if(delBtn) delBtn.onclick = () => deleteUser(u.email);
+  // 弹窗打开期间：每秒刷新卡密剩余时间（动态倒计时）
+  if(window.__umT) clearInterval(window.__umT);
+  window.__umT = setInterval(() => {
+    document.querySelectorAll('#um-detail [data-uexp]').forEach(el => {
+      const exp = +el.dataset.uexp;
+      el.textContent = (exp <= serverNow()) ? '已到期' : cd(exp);
+    });
+  }, 1000);
+}
+(function(){
+  const search = document.getElementById('um-search');
+  if(search) search.addEventListener('input', () => renderUserList(search.value));
+  document.querySelectorAll('.acc').forEach(acc => {
+    const h = acc.querySelector('.acc-h');
+    if(h) h.addEventListener('click', () => { if(acc.dataset.acc === 'users' && acc.classList.contains('open')) loadUsers(); });
+  });
+  const close = document.getElementById('um-close');
+  if(close) close.onclick = () => { document.getElementById('um-mask').classList.remove('show'); if(window.__umT){ clearInterval(window.__umT); window.__umT = null; } };
+  const mask = document.getElementById('um-mask');
+  if(mask) mask.addEventListener('click', e => { if(e.target === mask){ document.getElementById('um-mask').classList.remove('show'); if(window.__umT){ clearInterval(window.__umT); window.__umT = null; } } });
+})();
+
+/* ===== SH 验证生成器（给 sh 文件加卡密验证门）===== */
+(function(){
+  const srv = document.getElementById('shv-server');
+  if(srv && !srv.value) srv.value = location.origin;
+  const out = document.getElementById('shv-out');
+  const gen = document.getElementById('shv-gen');
+  const clr = document.getElementById('shv-clear');
+  const dl  = document.getElementById('shv-dl');
+  const src = document.getElementById('shv-src');
+  const res = document.getElementById('shv-result');
+  let wrapped = '';
+  if(gen) gen.onclick = () => {
+    const server = (srv.value || '').trim().replace(/\/+$/,'');
+    if(!server){ out.textContent='请填写服务器地址'; return; }
+    const body = src.value || '';
+    if(!body.trim()){ out.textContent='请先粘贴原始 SH 脚本内容'; return; }
+    const header = [
+      '#!/system/bin/sh',
+      '# ===== 卡密验证门（由后台自动生成，请勿删除此段）=====',
+      'CK_SERVER="'+server+'"',
+      'printf \'请输入邮箱: \'',
+      'read CK_EMAIL',
+      'printf \'请输入卡密: \'',
+      'stty -echo 2>/dev/null',
+      'read CK_CODE',
+      'stty echo 2>/dev/null',
+      'echo',
+      'CK_RESP=$(curl -s -o /tmp/ck_verify_resp.txt -w \'%{http_code}\' -X POST "$CK_SERVER/index.php" \\',
+      '  --data-urlencode "action=verify_card" \\',
+      '  --data-urlencode "email=$CK_EMAIL" \\',
+      '  --data-urlencode "code=$CK_CODE" 2>/dev/null)',
+      'CK_BODY=$(cat /tmp/ck_verify_resp.txt 2>/dev/null)',
+      'if [ "$CK_RESP" != "200" ]; then',
+      '  echo "验证失败：$CK_BODY"',
+      '  exit 1',
+      'fi',
+      'echo "验证通过，开始执行原脚本..."',
+      '# ===== 以下为原始脚本内容 ====='
+    ].join('\n');
+    wrapped = header + '\n' + body;
+    out.textContent = '已生成（'+wrapped.length+' 字节），点击下载。';
+    res.style.display = 'block';
+  };
+  if(clr) clr.onclick = () => { src.value=''; out.textContent=''; res.style.display='none'; wrapped=''; };
+  if(dl) dl.onclick = () => {
+    if(!wrapped) return;
+    const blob = new Blob([wrapped], {type:'text/x-sh'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'protected.sh';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+  };
+})();
+</script>
+<script>
+(function(){
+  function lsGet(k){try{return localStorage.getItem(k)||""}catch(e){return""}}
+  function setOut(m,ok){var e=document.getElementById('smtp-out');if(e){e.textContent=m;e.style.color=ok?'var(--good)':'var(--bad)';}}
+  function loadSmtp(){
+    var TK=lsGet('cardkey_token'); if(!TK)return;
+    fetch('auth.php?action=get_smtp&token='+encodeURIComponent(TK)).then(function(r){return r.json()}).then(function(d){
+      if(!d.ok)return;
+      if(d.smtp_host!=null)document.getElementById('smtp-host').value=d.smtp_host;
+      if(d.smtp_port!=null)document.getElementById('smtp-port').value=d.smtp_port;
+      if(d.smtp_user!=null)document.getElementById('smtp-user').value=d.smtp_user;
+      if(d.smtp_from!=null)document.getElementById('smtp-from').value=d.smtp_from;
+      if(d.smtp_secure!=null)document.getElementById('smtp-secure').value=d.smtp_secure;
+    }).catch(function(){});
+  }
+  var sb=document.getElementById('smtp-save');
+  if(sb)sb.onclick=function(){
+    var TK=lsGet('cardkey_token'); if(!TK){setOut('请先登录后台',false);return;}
+    var fd='smtp_host='+encodeURIComponent(document.getElementById('smtp-host').value.trim())
+      +'&smtp_port='+encodeURIComponent(document.getElementById('smtp-port').value.trim())
+      +'&smtp_user='+encodeURIComponent(document.getElementById('smtp-user').value.trim())
+      +'&smtp_from='+encodeURIComponent(document.getElementById('smtp-from').value.trim())
+      +'&smtp_secure='+encodeURIComponent(document.getElementById('smtp-secure').value);
+    var p=document.getElementById('smtp-pass').value;
+    fd+='&smtp_pass='+encodeURIComponent(p===''?'__KEEP__':p);
+    fetch('auth.php?action=set_smtp&token='+encodeURIComponent(TK),{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:fd}).then(function(r){return r.json()}).then(function(d){setOut(d.ok?(d.msg||'已保存'):(d.error||'保存失败'),d.ok)}).catch(function(){setOut('网络错误',false)});
+  };
+  var tb=document.getElementById('smtp-test');
+  if(tb)tb.onclick=function(){
+    var TK=lsGet('cardkey_token'); if(!TK){setOut('请先登录后台',false);return;}
+    fetch('auth.php?action=send_test_mail&token='+encodeURIComponent(TK),{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:''}).then(function(r){return r.json()}).then(function(d){setOut(d.ok?(d.msg||'已发送'):(d.error||'发送失败'),d.ok)}).catch(function(){setOut('网络错误',false)});
+  };
+  document.querySelector('.tabbar').addEventListener('click',function(){setTimeout(function(){var m=document.getElementById('tab-more'),t=document.getElementById('tab-tools');if(m&&m.classList.contains('active')){loadSmtp();loadApList();loadMyInjected();loadInjRecent();}if(t&&t.classList.contains('active')){loadSmtp();loadApList();loadMyInjected();loadInjRecent();}},0)});
+  setTimeout(function(){var m=document.getElementById('tab-more'),t=document.getElementById('tab-tools');if(m&&m.classList.contains('active')){loadSmtp();loadApList();loadMyInjected();loadInjRecent();}if(t&&t.classList.contains('active')){loadSmtp();loadApList();loadMyInjected();loadInjRecent();}},600);
+})();
+</script>
+<script>
+/* 平台介绍弹窗交互（2026-08-14：没有激活密码 → 高级介绍 + QQ 联系） */
+(function(){
+  var mask = document.getElementById('intro-mask');
+  var btn = document.getElementById('l-intro');
+  if(!mask || !btn) return;
+  var QQ = '2643492766';
+  function openIntro(){
+    mask.classList.add('show');
+    document.querySelectorAll('.intro-tabs .it').forEach(function(x){ x.classList.remove('on'); });
+    document.querySelectorAll('.intro-pane').forEach(function(x){ x.classList.remove('on'); });
+    var t0 = document.querySelector('.intro-tabs .it[data-it="about"]');
+    var p0 = document.querySelector('.intro-pane[data-pane="about"]');
+    if(t0) t0.classList.add('on');
+    if(p0) p0.classList.add('on');
+    var cb = document.getElementById('qq-copy');
+    if(cb){ cb.innerHTML = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-clipboard"/></svg> 复制 QQ 号'; }
+    countUp();
+  }
+  /* 数据亮点数字滚动（打开时从 0 滚到目标） */
+  function countUp(){
+    document.querySelectorAll('#intro-mask b[data-count]').forEach(function(b){
+      var target = parseInt(b.getAttribute('data-count'), 10) || 0;
+      var t0 = null, dur = 800;
+      function step(ts){
+        if(!t0) t0 = ts;
+        var p = Math.min((ts - t0) / dur, 1);
+        var ease = 1 - Math.pow(1 - p, 3);
+        b.textContent = Math.round(target * ease);
+        if(p < 1) requestAnimationFrame(step);
+      }
+      requestAnimationFrame(step);
+    });
+  }
+  /* 特性卡片：鼠标跟随光斑（Linear/Vercel 手法） */
+  var igs = document.querySelectorAll('.intro-grid .ig');
+  for(var i = 0; i < igs.length; i++){
+    (function(card){
+      card.addEventListener('mousemove', function(e){
+        var r = card.getBoundingClientRect();
+        card.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+        card.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
+      });
+    })(igs[i]);
+  }
+  function closeIntro(){ mask.classList.remove('show'); }
+  btn.onclick = openIntro;
+  var cx = document.getElementById('intro-close');
+  if(cx) cx.onclick = closeIntro;
+  mask.addEventListener('click', function(e){ if(e.target === mask) closeIntro(); });
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') closeIntro(); });
+  document.querySelectorAll('.intro-tabs .it').forEach(function(t){
+    t.onclick = function(){
+      document.querySelectorAll('.intro-tabs .it').forEach(function(x){ x.classList.remove('on'); });
+      document.querySelectorAll('.intro-pane').forEach(function(x){ x.classList.remove('on'); });
+      t.classList.add('on');
+      var p = document.querySelector('.intro-pane[data-pane="' + t.getAttribute('data-it') + '"]');
+      if(p) p.classList.add('on');
+    };
+  });
+  var copyBtn = document.getElementById('qq-copy');
+  if(copyBtn) copyBtn.onclick = function(){
+    var done = function(){ copyBtn.innerHTML = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-clipboard"/></svg> 已复制'; setTimeout(function(){ if(copyBtn) copyBtn.innerHTML = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-clipboard"/></svg> 复制 QQ 号'; }, 1600); };
+    var fail = function(){ copyBtn.innerHTML = '<svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><use href="#ic-clipboard"/></svg> 复制失败'; };
+    var fallback = function(){
+      var ta = document.createElement('textarea');
+      ta.value = QQ; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch(_) {}
+      document.body.removeChild(ta);
+      ok ? done() : fail();
+    };
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(QQ).then(done).catch(fallback);
+    } else { fallback(); }
+  };
+})();
+</script>
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none" aria-hidden="true"><symbol id="ic-wrench" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></symbol><symbol id="ic-user" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></symbol><symbol id="ic-megaphone" viewBox="0 0 24 24"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></symbol><symbol id="ic-grid" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></symbol><symbol id="ic-settings" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol><symbol id="ic-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></symbol><symbol id="ic-mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></symbol><symbol id="ic-package" viewBox="0 0 24 24"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></symbol><symbol id="ic-rocket" viewBox="0 0 24 24"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></symbol><symbol id="ic-activity" viewBox="0 0 24 24"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></symbol><symbol id="ic-clipboard" viewBox="0 0 24 24"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="M9 12h6"/><path d="M9 16h4"/></symbol><symbol id="ic-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></symbol><symbol id="ic-terminal" viewBox="0 0 24 24"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></symbol><symbol id="ic-chart" viewBox="0 0 24 24"><line x1="12" x2="12" y1="20" y2="10"/><line x1="18" x2="18" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="16"/></symbol><symbol id="ic-key" viewBox="0 0 24 24"><path d="m15.5 7.5 2.3 2.3a1 1 0 0 0 1.4 0l2.1-2.1a1 1 0 0 0 0-1.4L19 4"/><path d="m21 2-9.6 9.6"/><circle cx="7.5" cy="15.5" r="5.5"/></symbol><symbol id="ic-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol><symbol id="ic-trash" viewBox="0 0 24 24"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></symbol><symbol id="ic-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></symbol><symbol id="ic-lock" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></symbol></svg></body>
+</html>
