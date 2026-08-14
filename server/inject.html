@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>APK 注入加壳 · 卡密验证壳</title>
+<style>
+  :root{ --bg:#0b0e1a; --card:#141828; --line:#2a3150; --txt:#eaf0ff; --sub:#8b93b5;
+         --ok:#34d399; --err:#ff5d5d; --btn1:#21d4fd; --btn2:#7c5cff; }
+  *{box-sizing:border-box}
+  body{font:15px/1.65 -apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--txt);
+       margin:0;padding:0;min-height:100dvh;display:flex;flex-direction:column;align-items:center}
+  .wrap{width:min(94vw,460px);padding:26px 0 40px}
+  h1{font-size:21px;margin:8px 0 4px;background:linear-gradient(120deg,var(--btn1),var(--btn2));
+     -webkit-background-clip:text;background-clip:text;color:transparent}
+  .lead{color:var(--sub);margin:0 0 20px;font-size:14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:16px}
+  .step{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+  .num{flex:0 0 26px;height:26px;border-radius:50%;background:linear-gradient(120deg,var(--btn1),var(--btn2));
+       color:#0a0b14;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:14px}
+  .step b{font-weight:600}
+  .step span{color:var(--sub);font-size:13px}
+  input[type=file]{width:100%;padding:14px;border:1px dashed var(--line);border-radius:12px;
+       background:#0e1220;color:var(--txt);font-size:14px;margin-bottom:14px}
+  input[type=file]::file-selector-button{margin-right:12px;background:#222a44;color:var(--txt);
+       border:0;padding:9px 14px;border-radius:9px;cursor:pointer}
+  button.go{width:100%;background:linear-gradient(120deg,var(--btn1),var(--btn2));border:0;color:#0a0b14;
+       font-weight:700;padding:15px;border-radius:13px;cursor:pointer;font-size:16px}
+  button.go:disabled{opacity:.5;cursor:not-allowed}
+  #r{margin-top:14px;font-size:14px;white-space:pre-wrap;word-break:break-all}
+  .ok{color:var(--ok)} .err{color:var(--err)} .warn{color:#ffcf5d}
+  .dl{display:block;text-align:center;text-decoration:none;background:linear-gradient(120deg,#34d399,#22d3ee);
+      color:#06231c;font-weight:700;padding:15px;border-radius:13px;margin-top:6px}
+  .note{color:var(--sub);font-size:12.5px;margin-top:10px;line-height:1.6}
+  .hist{margin-top:8px}
+  .hist a{display:block;color:var(--btn1);text-decoration:none;font-size:13px;padding:7px 0;border-bottom:1px solid var(--line)}
+  .badge{display:inline-block;background:#222a44;color:var(--sub);font-size:11px;padding:2px 8px;border-radius:20px;margin-left:6px}
+  .spin{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;
+        border-radius:50%;animation:sp 0.8s linear infinite;vertical-align:-2px;margin-right:6px}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  /* 进度条 */
+  .prog{margin-top:14px;display:none}
+  .stage{font-size:14px;margin-bottom:9px;display:flex;align-items:center;gap:8px;min-height:20px}
+  .track{height:12px;background:#0e1220;border:1px solid var(--line);border-radius:20px;overflow:hidden;position:relative}
+  .fill{height:100%;width:0;background:linear-gradient(120deg,var(--btn1),var(--btn2));transition:width .25s ease}
+  /* 服务器注入阶段：无法拿到真实百分比，用流动动画表示“正在干活” */
+  .fill.indet{width:35%;animation:indet 1.3s ease-in-out infinite}
+  @keyframes indet{0%{margin-left:0;width:25%}50%{margin-left:60%;width:40%}100%{margin-left:0;width:25%}}
+  .pct{font-size:12px;color:var(--sub);margin-top:7px;text-align:right;min-height:16px}
+  .dots::after{content:'';animation:dots 1.4s steps(4,end) infinite}
+  @keyframes dots{0%{content:''}25%{content:'·'}50%{content:'··'}75%{content:'···'}100%{content:''}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>APK 注入加壳</h1>
+  <p class="lead">选一个普通 APK → 自动套上卡密验证壳 → 生成可直接安装分发的版本。重活在服务器完成，全程自动，无需守着。</p>
+  <div id="svc" class="note" style="margin:-8px 0 16px">注入服务状态：检测中…</div>
+
+  <div class="card">
+    <div class="step"><div class="num">1</div><div><b>选择目标 APK</b><br><span>未加壳 / 未重度混淆的普通 APK</span></div></div>
+    <input id="f" type="file" accept=".apk,application/vnd.android.package-archive">
+    <div class="step"><div class="num">2</div><div><b>一键注入</b><br><span>反编译 → 注入 GateActivity 验证壳 → 重签名</span></div></div>
+    <button class="go" id="b">开始注入加壳</button>
+
+    <!-- 进度条：上传中 / 服务器注入中 / 完成 -->
+    <div id="prog" class="prog">
+      <div class="stage" id="stage"><span class="spin"></span><span id="stageTxt">准备中…</span></div>
+      <div class="track"><div class="fill" id="fill"></div></div>
+      <div class="pct" id="pct"></div>
+    </div>
+
+    <div id="r"></div>
+    <div class="note">大文件（50MB+）上传 + 注入约需 1–2 分钟，期间请保持本页面打开。进度条会显示「正在上传文件」与「服务器注入中」两个阶段，完成后下方出现下载按钮。</div>
+  </div>
+
+  <div class="card">
+    <div class="step"><div class="num">3</div><div><b>我的注入记录</b><span class="badge">本机保存</span></div></div>
+    <div id="hist" class="hist"><span class="note">还没有注入记录。</span></div>
+  </div>
+
+  <div class="card">
+    <div class="step"><div class="num">?</div><div><b>使用说明 / 常见问题</b></div></div>
+    <details style="margin-top:8px">
+      <summary style="cursor:pointer;color:var(--btn1);font-size:14px">怎么用？</summary>
+      <div class="note">① 选一个普通 APK（未加固 / 未深度混淆）。② 点「开始注入加壳」。③ 完成后点下载 → 安装。打开该 App 会先走卡密验证页，通过才进入原应用。</div>
+    </details>
+    <details style="margin-top:8px">
+      <summary style="cursor:pointer;color:var(--btn1);font-size:14px">加壳后和原包有什么区别？</summary>
+      <div class="note">包名与原包一致，安装会覆盖原包；如需共存请先卸载原包。验证页地址已内置在壳里，卡密在你的管理后台生成。</div>
+    </details>
+    <details style="margin-top:8px">
+      <summary style="cursor:pointer;color:var(--btn1);font-size:14px">为什么有的 APK 注入失败？</summary>
+      <div class="note">已加固（如腾讯乐固、360 加固、梆梆）、深度混淆、多 dex 或超大体积的 APK 可能解码失败，属正常现象，并非工具问题。失败时会显示具体原因。若失败，请换一个未加固的普通 APK 重试。</div>
+    </details>
+    <details style="margin-top:8px">
+      <summary style="cursor:pointer;color:var(--btn1);font-size:14px">进度条有哪些阶段？</summary>
+      <div class="note">点击注入后：①「正在上传文件」并显示百分比（文件传给服务器，越大越慢）；②「服务器注入中」流动动画（服务器自动反编译→塞壳→改入口→重打包→签名，这段时间无法拿真实百分比，用动画表示正在处理）；③「完成」100% 并出现下载按钮。若超过 10 分钟仍停在某阶段，多半是该 APK 加固/异常导致构建超时，页面会提示失败原因。</div>
+    </details>
+  </div>
+</div>
+
+<script>
+const API = "/inject-api";   // 同域反向代理到注入服务，永远可达，无需密码
+const r = document.getElementById('r');
+const b = document.getElementById('b');
+const f = document.getElementById('f');
+const hist = document.getElementById('hist');
+const svc = document.getElementById('svc');
+const prog = document.getElementById('prog');
+const stage = document.getElementById('stage');
+const stageTxt = document.getElementById('stageTxt');
+const fill = document.getElementById('fill');
+const pct = document.getElementById('pct');
+
+function setStage(text, spinning){
+  stageTxt.textContent = text;
+  let spin = stage.querySelector('.spin');
+  if(spinning && !spin){
+    spin = document.createElement('span'); spin.className='spin';
+    stage.insertBefore(spin, stageTxt);
+  } else if(!spinning && spin){
+    spin.remove();
+  }
+}
+function setPct(txt){ pct.textContent = txt || ''; }
+function setFill(p, indet){
+  if(indet){ fill.classList.add('indet'); }
+  else { fill.classList.remove('indet'); fill.style.width = Math.max(0,Math.min(100,p)) + '%'; }
+}
+function showProg(on){ prog.style.display = on ? 'block' : 'none'; }
+
+function showHist(){
+  let arr = [];
+  try { arr = JSON.parse(localStorage.getItem('inject_hist') || '[]'); } catch(_){}
+  if(!arr.length){ hist.innerHTML = '<span class="note">还没有注入记录。</span>'; return; }
+  hist.innerHTML = arr.map(it =>
+    '<a href="'+it.url+'" download>'+escapeHtml(it.name)+' <span class="note">· '+it.time+'</span></a>'
+  ).join('');
+}
+function escapeHtml(s){ return (s+'').replace(/[<>&"]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c])); }
+function pushHist(url, name){
+  let arr = [];
+  try { arr = JSON.parse(localStorage.getItem('inject_hist') || '[]'); } catch(_){}
+  arr.unshift({url, name, time: new Date().toLocaleString('zh-CN')});
+  arr = arr.slice(0, 12);
+  try { localStorage.setItem('inject_hist', JSON.stringify(arr)); } catch(_){}
+  showHist();
+}
+
+function doInject(){
+  const file = f.files[0];
+  if(!file){ r.className='err'; r.textContent = '请先选择 APK 文件'; return; }
+  if(!/\.apk$/i.test(file.name)){ r.className='err'; r.textContent = '仅支持 .apk 文件'; return; }
+
+  r.className=''; r.innerHTML='';
+  b.disabled = true;
+  showProg(true);
+  setFill(0, false);
+  setPct('');
+  setStage('正在上传文件…', true);
+
+  const t0 = Date.now();
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', API + '/inject', true);
+  xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+  xhr.timeout = 600000; // 10 分钟超时
+
+  // 阶段一：上传进度
+  xhr.upload.onprogress = function(e){
+    if(e.lengthComputable && e.total > 0){
+      const p = Math.min(99, Math.round(e.loaded / e.total * 100));
+      setFill(p, false);
+      setPct('上传 ' + p + '%  （' + fmtSize(e.loaded) + ' / ' + fmtSize(e.total) + '）');
+    }
+  };
+  // 上传完成 → 进入阶段二：服务器注入中
+  xhr.upload.onload = function(){
+    setFill(0, true);   // 流动动画
+    setPct('');
+    setStage('服务器注入中…（反编译 → 塞壳 → 改入口 → 重打包 → 签名）', true);
+  };
+  xhr.onload = function(){
+    let j = null;
+    try { j = JSON.parse(xhr.responseText); } catch(_){}
+    if(xhr.status >= 200 && xhr.status < 300 && j && j.ok){
+      finish(j, t0);
+      return;
+    }
+    const msg = (j && j.error) ? j.error : ('请求失败（HTTP '+xhr.status+'）');
+    fail('❌ 注入失败：\n' + msg.slice(0,800));
+  };
+  xhr.ontimeout = function(){ fail('❌ 超时：注入超过 10 分钟未完成，多半是该 APK 加固/异常导致构建超时。请换一个未加固的普通 APK 重试。'); };
+  xhr.onerror = function(){ fail('❌ 网络异常：上传或连接中断，请检查网络后重试。'); };
+
+  xhr.send(file);
+}
+
+function finish(j, t0){
+  b.disabled = false;
+  setFill(100, false);
+  setStage('完成 ✅', false);
+  setPct('用时 ' + ((Date.now()-t0)/1000).toFixed(0) + ' 秒');
+  const secs = ((Date.now()-t0)/1000).toFixed(0);
+  r.className='ok';
+  r.innerHTML = '✅ 注入成功！（用时 '+secs+' 秒）\n点击下方按钮下载安装：';
+  const a = document.createElement('a');
+  a.className='dl'; a.href = j.url; a.download = ''; a.textContent = '⬇ 下载 / 安装 APK';
+  r.appendChild(a);
+  pushHist(j.url, (f.files[0] && f.files[0].name) || 'apk');
+  try { a.click(); } catch(_){}
+}
+
+function fail(msg){
+  b.disabled = false;
+  showProg(false);
+  r.className='err'; r.textContent = msg;
+}
+
+function fmtSize(b){
+  if(b < 1024) return b + ' B';
+  if(b < 1024*1024) return (b/1024).toFixed(1) + ' KB';
+  return (b/1024/1024).toFixed(1) + ' MB';
+}
+
+b.onclick = doInject;
+showHist();
+
+// 注入服务在线状态（同域，永远可达）
+fetch(API + '/health')
+  .then(r => r.json())
+  .then(j => { if(j && j.ok){ svc.textContent='注入服务：在线 ●'; svc.style.color='var(--ok)'; } else throw 0; })
+  .catch(() => { svc.textContent='⚠️ 注入服务暂不可用，请稍后重试'; svc.style.color='var(--warn,#ffcf5d)'; });
+</script>
+</body>
+</html>
