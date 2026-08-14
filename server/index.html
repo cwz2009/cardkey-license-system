@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b0e1a">
+<title>卡密验证系统</title>
+<style>
+  :root{--bg:#0b0e1a;--panel:#141828;--panel2:#1b2034;--line:rgba(255,255,255,.08);--txt:#eaf0ff;--sub:#8b93b5;--acc:#4d7cf6;--acc-2:#7ea6ff}
+  *{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(900px 600px at 80% -10%,rgba(77,124,246,.18),transparent 60%),radial-gradient(700px 500px at 0% 110%,rgba(126,166,255,.10),transparent 60%),var(--bg);color:var(--txt);font:15px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft Yahei",sans-serif;-webkit-font-smoothing:antialiased;min-height:100vh}
+  .wrap{max-width:560px;margin:0 auto;padding:64px 20px 72px}
+  .logo{width:56px;height:56px;border-radius:16px;background:linear-gradient(135deg,#4d7cf6,#7ea6ff);display:flex;align-items:center;justify-content:center;box-shadow:0 14px 34px -14px rgba(77,124,246,.6);margin-bottom:20px}
+  h1{font-size:22px;font-weight:700;margin:0 0 6px;letter-spacing:.2px}
+  .tag{font-size:13px;color:var(--sub)}
+  .cards{margin-top:26px;display:flex;flex-direction:column;gap:12px}
+  a{text-decoration:none;display:flex;align-items:center;gap:14px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px 18px;color:var(--txt);transition:transform .18s ease,border-color .2s ease,background .2s ease}
+  a:hover{border-color:var(--acc);background:var(--panel2);transform:translateY(-2px)}
+  .ic{width:40px;height:40px;border-radius:12px;background:rgba(77,124,246,.16);color:var(--acc-2);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+  .ic svg{width:20px;height:20px;stroke:currentColor;stroke-width:2;fill:none;stroke-linecap:round;stroke-linejoin:round}
+  .t{font-size:15px;font-weight:600}
+  .d{font-size:12px;color:var(--sub);margin-top:2px}
+  .foot{margin-top:34px;font-size:12px;color:var(--sub);opacity:.8}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo">
+    <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/><path d="M9 12l2 2 4-4"/></svg>
+  </div>
+  <h1>卡密验证系统</h1>
+  <div class="tag">安全验证 · 云控管理 · APK 加壳注入</div>
+  <div class="cards">
+    <a href="admin.html">
+      <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></div>
+      <div><div class="t">管理云后台</div><div class="d">卡密生成 · 用户管理 · APK 注入</div></div>
+    </a>
+    <a href="user.html">
+      <div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg></div>
+      <div><div class="t">用户中心</div><div class="d">激活卡密 · 我的设备 · 查看状态</div></div>
+    </a>
+    <a href="download.html">
+      <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-5-5m5 5l5-5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></div>
+      <div><div class="t">下载安装</div><div class="d">下载最新安装包（.apk 直接安装）</div></div>
+    </a>
+  </div>
+  <div class="foot">如需注册账号，请联系管理员开通</div>
+</div>
+</body>
+</html>
