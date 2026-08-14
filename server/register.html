@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2024%2024%27%3E%3Cpath%20fill%3D%27%234d7cf6%27%20d%3D%27M12%202l8%204v6c0%205-3.5%208-8%2010-4.5-2-8-5-8-10V6z%27/%3E%3Cpath%20fill%3D%27none%27%20stroke%3D%27%23fff%27%20stroke-width%3D%272.2%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%20d%3D%27M9.2%2012.4l2%202%204.4-4.8%27/%3E%3C/svg%3E">
+<meta name="theme-color" content="#0e1116">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>注册账号</title>
+<style>
+:root{--bg:#0e1116;--panel:#171b22;--line:#262c36;--txt:#e8edf4;--sub:#8b95a5;--acc:#4d7cf6;--acc-text:#fff;--bad:#ff5c5c;--good:#39d98a;--input-bg:#0f1318;}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+.card{width:100%;max-width:360px;background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:30px 24px;box-shadow:0 24px 70px rgba(0,0,0,.55)}
+.t{font-size:20px;font-weight:700;text-align:center;margin-bottom:6px}
+.s{font-size:12px;color:var(--sub);text-align:center;margin-bottom:22px}
+input{width:100%;background:var(--input-bg);border:1px solid var(--line);color:var(--txt);border-radius:13px;padding:14px;font-size:15px;outline:none;margin-bottom:12px}
+input:focus{border-color:var(--acc)}
+.row{display:flex;gap:10px;align-items:flex-start}
+.row input{margin-bottom:0;flex:1}
+button{width:100%;background:var(--acc);color:var(--acc-text);border:0;border-radius:13px;padding:14px;font-size:16px;font-weight:600;cursor:pointer;transition:transform .12s,filter .2s;margin-top:6px}
+button:active{transform:scale(.97)}
+button.ghost{background:transparent;color:var(--sub);border:1px solid var(--line);margin-top:10px}
+button.codebtn{white-space:nowrap;width:auto;padding:0 16px;font-size:13px;margin-top:0;height:46px}
+button:disabled{opacity:.55;cursor:not-allowed}
+.err{font-size:12px;color:var(--bad);text-align:center;min-height:16px;margin-bottom:8px}
+.ok{font-size:13px;color:var(--good);text-align:center;min-height:16px;margin-bottom:8px}
+a{color:var(--acc);text-decoration:none}
+
+/* —— 全站统一打磨（2026-08-11）：聚焦环 / 选中色 / 配色模式 / 减弱动效 / 悬停反馈 —— */
+:root{color-scheme:dark}
+[data-theme="light"]{color-scheme:light}
+::selection{background:rgba(77,124,246,.32);color:inherit}
+:focus-visible{outline:2px solid var(--acc,#4d7cf6);outline-offset:2px}
+button,input,textarea,select{font-family:inherit}
+button.act:hover,button:hover,.btn-primary:hover{filter:brightness(1.08)}
+button:active,.btn:active{transform:scale(.97)}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+
+.card{animation:cardIn .45s cubic-bezier(.16,1,.3,1)}
+@keyframes cardIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="t">注册管理员账号</div>
+  <div class="s">注册后使用 邮箱 + 邮箱密码 + 激活密码 登录</div>
+  <div class="err" id="err"></div>
+  <div class="ok" id="ok"></div>
+  <input id="email" type="email" placeholder="邮箱（用于接收验证码）" autocomplete="off">
+  <div class="row">
+    <input id="code" type="text" placeholder="邮箱验证码" autocomplete="off">
+    <button class="codebtn" id="send" type="button">发送验证码</button>
+  </div>
+  <input id="uname" type="text" placeholder="用户名" autocomplete="off">
+  <input id="pass" type="password" placeholder="登录密码（至少 6 位）" autocomplete="off">
+  <button id="reg" type="button">注册</button>
+  <button class="ghost" type="button" onclick="location.href='admin.html'">返回登录</button>
+</div>
+<script>
+const err=document.getElementById('err'), ok=document.getElementById('ok');
+function setErr(m){err.textContent=m;ok.textContent='';}
+function setOk(m){ok.textContent=m;err.textContent='';}
+let cd=0,timer=null;
+document.getElementById('send').onclick=async()=>{
+  const email=document.getElementById('email').value.trim();
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)){setErr('请先填写正确的邮箱');return;}
+  if(cd>0)return;
+  setErr('');
+  try{
+    const r=await fetch('auth.php?action=send_code',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'email='+encodeURIComponent(email)}).then(x=>x.json());
+    if(r.ok){setOk('验证码已发送，请查收邮箱');cd=60;const b=document.getElementById('send');b.disabled=true;b.textContent='60s';timer=setInterval(()=>{cd--;if(cd<=0){clearInterval(timer);b.disabled=false;b.textContent='发送验证码';}else b.textContent=cd+'s';},1000);}
+    else setErr(r.error||'发送失败');
+  }catch(e){setErr('网络错误');}
+};
+document.getElementById('reg').onclick=async()=>{
+  const email=document.getElementById('email').value.trim();
+  const code=document.getElementById('code').value.trim();
+  const uname=document.getElementById('uname').value.trim();
+  const pass=document.getElementById('pass').value;
+  if(!email||!code||!uname||!pass){setErr('请填写完整');return;}
+  setErr('');
+  try{
+    const r=await fetch('auth.php?action=register',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'email='+encodeURIComponent(email)+'&code='+encodeURIComponent(code)+'&username='+encodeURIComponent(uname)+'&password='+encodeURIComponent(pass)}).then(x=>x.json());
+    if(r.ok){setOk('注册成功！正在跳转到登录…');setTimeout(()=>location.href='admin.html',1200);}
+    else setErr(r.error||'注册失败');
+  }catch(e){setErr('网络错误');}
+};
+</script>
+</body>
+</html>
