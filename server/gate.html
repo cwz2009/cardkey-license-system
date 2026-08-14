@@ -1,0 +1,860 @@
+<!doctype html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A//www.w3.org/2000/svg%27%20viewBox%3D%270%200%2024%2024%27%3E%3Cpath%20fill%3D%27%234d7cf6%27%20d%3D%27M12%202l8%204v6c0%205-3.5%208-8%2010-4.5-2-8-5-8-10V6z%27/%3E%3Cpath%20fill%3D%27none%27%20stroke%3D%27%23fff%27%20stroke-width%3D%272.2%27%20stroke-linecap%3D%27round%27%20stroke-linejoin%3D%27round%27%20d%3D%27M9.2%2012.4l2%202%204.4-4.8%27/%3E%3C/svg%3E">
+<meta name="theme-color" content="#05060c">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>卡密验证 · 网关</title>
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, proxy-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<script>
+// 服务器地址：壳内由 CardKeyBridge.getGateParams() 注入（api），网页独立打开时用内置默认值。
+// 本地验证页（assets/gate.html）离线也能打开显示，但验证必须联网（卡密/密码不落本地）。
+var __GP__ = {};
+try{ if(window.CardKeyBridge && typeof window.CardKeyBridge.getGateParams === "function"){ __GP__ = JSON.parse(String(window.CardKeyBridge.getGateParams()) || "{}") || {}; } }catch(e){}
+const API_BASE = __GP__.api || "http://YOUR_SERVER_IP:8080";
+// 安全存储封装：WebView 可能未开启 DOM 存储导致 localStorage 为 null，这里兜底到内存，避免崩溃
+var _memStore = {};
+var store = {
+  getItem: function(k){ try { if (window.localStorage) return window.localStorage.getItem(k); } catch(e){} return (k in _memStore) ? _memStore[k] : null; },
+  setItem: function(k, v){ try { if (window.localStorage) { window.localStorage.setItem(k, v); return; } } catch(e){} _memStore[k] = String(v); },
+  removeItem: function(k){ try { if (window.localStorage) window.localStorage.removeItem(k); } catch(e){} delete _memStore[k]; }
+};
+(function(){
+  var t = store.getItem('cardkey_user_theme') || 'dark';
+  document.documentElement.setAttribute('data-theme', t);
+})();
+</script>
+<style>
+  :root{
+    --bg:#06070d;
+    --bg-grad:radial-gradient(130% 100% at 50% -10%, #11142a 0%, #090a14 45%, #04050a 100%);
+    --panel:rgba(20,23,40,.9); --line:rgba(150,170,255,.18);
+    --txt:#eaf0ff; --sub:#8b93b5;
+    --acc:#4d7cf6; --acc-2:#6d93f8; --acc-3:#8fb0fa; --acc-text:#0a0b14;
+    --ok:#34d399; --warn:#f5a623; --bad:#ff5d5d;
+    --input-bg:rgba(10,12,22,.7); --splash-bg:#05060c;
+    --gem:linear-gradient(120deg,#4d7cf6 0%,#3a63d0 100%);
+    --ease:cubic-bezier(.16,1,.3,1);
+  }
+  /* 暗夜宝石：纯色底 + 静态渐变按钮 + 细腻层次（低端机流畅） */
+  [data-theme="dark"] body{background:#06070d}
+  [data-theme="dark"] .card,[data-theme="dark"] .ann,[data-theme="dark"] .banner{
+    background:rgba(20,23,40,.92);
+    border:1px solid rgba(150,170,255,.16);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 10px 28px rgba(0,0,0,.3);
+  }
+  [data-theme="dark"] button.act{
+    background:linear-gradient(180deg,#4d7cf6 0%,#3a63d0 100%);
+    color:#fff;
+    border:1px solid rgba(255,255,255,.12);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.16);
+  }
+  [data-theme="dark"] .splash-bar > i{background:var(--acc)}
+
+  [data-theme="gold"]{
+    --bg:#1a140c;
+    --bg-grad:radial-gradient(135% 105% at 50% -12%, #2e2316 0%, #1c150d 52%, #120d07 100%);
+    --panel:rgba(46,34,18,.55);
+    --line:rgba(214,178,90,.22);
+    --txt:#f6efe0; --sub:#9c8c6e; --acc:#c9a227; --acc-2:#b8860b; --acc-text:#1a140c;
+    --ok:#34d399; --warn:#f5a623; --bad:#ff5d5d;
+    --input-bg:rgba(20,15,8,.6); --splash-bg:#1a140c;
+    --gem:linear-gradient(120deg,#dcb54e 0%,#c9a227 45%,#b8860b 100%);
+  }
+  [data-theme="gold"] body{background:var(--bg-grad)}
+  [data-theme="gold"] .card,[data-theme="gold"] .ann,[data-theme="gold"] .banner{
+    background:rgba(43,33,18,.94);
+    border:1px solid rgba(201,162,39,.30);
+    box-shadow:inset 0 1px 0 rgba(255,240,205,.08), 0 10px 26px rgba(0,0,0,.35);
+  }
+  [data-theme="gold"] button.act{
+    background:linear-gradient(180deg,#96783c 0%,#7d6430 100%);
+    color:var(--acc-text);
+    border:1px solid rgba(255,255,255,.16);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.22);
+  }
+
+  /* 暮光蓝：深海军蓝底 + 低饱和雾蓝点缀（沉稳不艳） */
+  [data-theme="blue"]{
+    --bg:#0e1420; --bg-grad:#0e1420;
+    --panel:#151d2c; --line:rgba(140,170,220,.16);
+    --txt:#dfe6f2; --sub:#8a96ad;
+    --acc:#4d6f9c; --acc-2:#7ea6d4; --acc-3:#9db8dd; --acc-text:#f2f6fc;
+    --ok:#3fa67a; --warn:#cf952e; --bad:#ff5d5d;
+    --input-bg:#121a28; --splash-bg:#0e1420;
+    --gem:linear-gradient(120deg,#4d6f9c 0%,#38547c 100%);
+  }
+  [data-theme="blue"] body{background:#0e1420}
+  [data-theme="blue"] .card,[data-theme="blue"] .ann,[data-theme="blue"] .banner{background:#151d2c;border:1px solid rgba(140,170,220,.14);box-shadow:inset 0 1px 0 rgba(255,255,255,.05), 0 10px 28px rgba(0,0,0,.34)}
+  [data-theme="blue"] button.act{background:linear-gradient(180deg,#4d6f9c 0%,#38547c 100%);color:#fff;border:1px solid rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.18)}
+  [data-theme="blue"] .splash-bar > i{background:linear-gradient(90deg,#7ea6d4,#38547c)}
+
+  /* 雾白：柔和浅灰底 + 沉稳蓝（降亮度，不刺眼） */
+  [data-theme="light"]{
+    --bg:#eceef1; --bg-grad:#eceef1;
+    --panel:#f7f8fa; --line:rgba(30,40,55,.10);
+    --txt:#2f333b; --sub:#787d88;
+    --acc:#3f6cb0; --acc-2:#2f5a94; --acc-3:#6d92c8; --acc-text:#ffffff;
+    --ok:#2f9168; --warn:#c0831f; --bad:#dd4d4d;
+    --input-bg:#fbfcfd; --splash-bg:#eceef1;
+    --gem:linear-gradient(120deg,#4a76b8 0%,#35609c 100%);
+  }
+  [data-theme="light"] body{background:#eceef1}
+  [data-theme="light"] .card,[data-theme="light"] .ann,[data-theme="light"] .banner{background:#f7f8fa;border:1px solid rgba(30,40,55,.09);box-shadow:inset 0 1px 0 rgba(255,255,255,.9), 0 6px 20px rgba(30,40,60,.05)}
+  [data-theme="light"] button.act{background:linear-gradient(180deg,#4a76b8 0%,#35609c 100%);color:#fff;border:1px solid rgba(255,255,255,.16);box-shadow:inset 0 1px 0 rgba(255,255,255,.28)}
+  [data-theme="light"] .splash-bar > i{background:linear-gradient(90deg,#6d92c8,#2f5a94)}
+
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{margin:0;background:var(--bg);color:var(--txt);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft Yahei",sans-serif;overflow-x:hidden;-webkit-font-smoothing:antialiased;min-height:100vh}
+  body,.card,.ann,.banner,input,button{transition:background-color .2s ease,color .2s ease,border-color .2s ease}
+
+  /* 开屏（极简版：纯色底 + 图标淡入 + 进度条，无光晕/旋转/漂浮动画，低端机流畅） */
+  #splash{position:fixed;inset:0;z-index:200;background:var(--splash-bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:30px;overflow:hidden;transition:opacity .3s ease}
+  #splash.hide{opacity:0;visibility:hidden}
+  .splash-mark{width:84px;height:84px;position:relative;animation:markIn .5s ease both}
+  .splash-mark svg{width:84px;height:84px;stroke:url(#sg);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  @keyframes markIn{from{opacity:0}to{opacity:1}}
+  .splash-title{font-size:19px;font-weight:600;letter-spacing:3px;opacity:0;color:var(--txt);animation:fadeIn .6s .35s ease forwards}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .splash-bar{position:relative;width:140px;height:3px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden;margin-top:4px}
+  .splash-bar > i{position:absolute;left:0;top:0;height:100%;width:100%;background:var(--acc);transform:scaleX(0);transform-origin:left;border-radius:3px;animation:fill 2s ease .3s forwards}
+  @keyframes fill{to{transform:scaleX(1)}}
+  /* 开屏图标颜色随主题 */
+  #sg stop:nth-child(1){stop-color:#4d7cf6}
+  #sg stop:nth-child(2){stop-color:#5d8bf7}
+  #sg stop:nth-child(3){stop-color:#6d9af8}
+  [data-theme="gold"] #sg stop:nth-child(1){stop-color:#dcb54e}
+  [data-theme="gold"] #sg stop:nth-child(2){stop-color:#c9a227}
+  [data-theme="gold"] #sg stop:nth-child(3){stop-color:#b8860b}
+  [data-theme="blue"] #sg stop:nth-child(1){stop-color:#6ba6ff}
+  [data-theme="blue"] #sg stop:nth-child(2){stop-color:#4d8dff}
+  [data-theme="blue"] #sg stop:nth-child(3){stop-color:#3d6fe0}
+  [data-theme="light"] #sg stop:nth-child(1){stop-color:#5b8ef0}
+  [data-theme="light"] #sg stop:nth-child(2){stop-color:#2f6feb}
+  [data-theme="light"] #sg stop:nth-child(3){stop-color:#2757c4}
+
+  .app{max-width:520px;margin:0 auto;padding:30px 16px 28px;display:none;min-height:100vh;min-height:100dvh;flex-direction:column}
+  .app.show{display:flex}
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+  h1{font-size:20px;font-weight:600;margin:0;letter-spacing:.3px}
+  .theme-toggle{background:none;border:1px solid var(--line);color:var(--sub);border-radius:20px;padding:7px 14px;font-size:12px;cursor:pointer;transition:color .2s,border-color .2s}
+  .theme-toggle:active{transform:scale(.96)}
+  .ann{background:rgba(124,92,255,.08);border:1px solid var(--line);color:var(--txt);border-radius:12px;padding:12px 14px;font-size:13px;margin-bottom:14px;display:none}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:18px;margin-bottom:14px}
+  label{font-size:13px;color:var(--sub);display:block;margin-bottom:7px}
+  input.k{width:100%;background:var(--input-bg);border:1px solid var(--line);color:var(--txt);border-radius:12px;padding:14px;font-size:17px;letter-spacing:2px;outline:none;transition:border-color .2s;text-transform:uppercase}
+  input.k:focus{border-color:var(--acc)}
+  button.act{width:100%;background:var(--acc);color:var(--acc-text);border:0;border-radius:12px;padding:15px;font-size:17px;font-weight:600;cursor:pointer;transition:transform .12s,filter .2s;margin-top:14px}
+  button.act:hover{filter:brightness(1.05)}
+  button.act:active{transform:scale(.97)}
+  .muted{color:var(--sub);font-size:13px;word-break:break-all}
+  .mono{font-family:ui-monospace,Menlo,monospace;font-size:14px}
+  .row{display:flex;justify-content:space-between;align-items:center}
+  .banner{display:none;background:rgba(255,93,93,.12);border:1px solid rgba(255,93,93,.4);color:#ffb3b3;border-radius:12px;padding:14px;margin-bottom:14px;font-size:14px}
+  .hint{color:var(--sub);font-size:12px;text-align:center;margin-top:10px}
+  /* 状态卡进入按钮 */
+  #r-enter{background:linear-gradient(180deg,var(--acc-2),var(--acc));box-shadow:inset 0 1px 0 rgba(255,255,255,.18),0 10px 24px -10px var(--acc)}
+  #r-enter:active{transform:scale(.97)}
+
+  /* 强制更新遮罩 */
+  .mask{position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;padding:24px}
+  .mask.show{display:flex}
+  #upd-mask .box{width:100%;max-width:320px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:24px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+  #upd-mask .um{font-size:15px;color:var(--txt);line-height:1.7;margin-bottom:20px}
+  #upd-mask .ub{width:100%;background:var(--acc);color:var(--acc-text);border:0;border-radius:12px;padding:15px;font-size:16px;font-weight:600;cursor:pointer}
+  #upd-mask .ub:active{transform:scale(.97)}
+  /* 验证页底部：极低调的版本小字 */
+  .selfver{font-size:11px;line-height:1;opacity:.32;text-align:center;margin-top:auto;padding-top:20px;letter-spacing:.4px;color:var(--txt);user-select:none;pointer-events:none}
+  /* 底部联系小字（QQ 业务引导，低调不打扰） */
+  .qqline{font-size:11px;line-height:1.7;opacity:.45;text-align:center;padding:6px 18px 16px;letter-spacing:.3px;color:var(--txt)}
+  .qqline b{font-weight:600;color:var(--acc)}
+  /* 验证端署名：显示控制者用户名（注册时填的），低调小字 */
+  .ownerline{font-size:11px;line-height:1.7;opacity:.4;text-align:center;padding:14px 18px 0;letter-spacing:.3px;color:var(--txt)}
+  /* 注入者自定义模块（输入卡密下方） */
+  #owner-mod{font-size:14px;line-height:1.7;color:var(--txt)}
+  #owner-mod .mod-line{margin:2px 0;word-break:break-all}
+  #owner-mod a{color:var(--acc);text-decoration:underline}
+  /* 公告居中弹框（SSE 实时推送） */
+  #annModal-mask{position:fixed;inset:0;z-index:500;display:none;align-items:center;justify-content:center;background:rgba(2,3,8,.6);animation:fade .2s ease}
+  #annModal-box{width:min(90vw,420px);background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+  .am-h{display:flex;align-items:center;gap:8px;font-weight:600;font-size:15px;margin-bottom:12px}
+  .am-h #annModal-ico{font-size:18px}
+  .am-x{margin-left:auto;background:none;border:none;color:var(--sub);font-size:24px;line-height:1;cursor:pointer;padding:0 4px}
+  .am-b{white-space:pre-wrap;line-height:1.65;color:var(--txt);font-size:14px;max-height:52vh;overflow:auto}
+  .am-f{margin-top:16px;text-align:right}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+
+/* —— 全站统一打磨（2026-08-11）：聚焦环 / 选中色 / 配色模式 / 减弱动效 / 悬停反馈 —— */
+:root{color-scheme:dark}
+[data-theme="light"]{color-scheme:light}
+::selection{background:rgba(77,124,246,.32);color:inherit}
+:focus-visible{outline:2px solid var(--acc,#4d7cf6);outline-offset:2px}
+button,input,textarea,select{font-family:inherit}
+button.act:hover,button:hover,.btn-primary:hover{filter:brightness(1.08)}
+button:active,.btn:active{transform:scale(.97)}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+}
+
+/* —— 开屏统一（与后台同一套）：描边自绘盾牌 + 呼吸环 + 纤细滑动线（去旧"进度条填满"AI味） —— */
+#splash{background:var(--splash-bg)}
+.splash-mark{width:104px;height:104px;position:relative;display:flex;align-items:center;justify-content:center;animation:markIn .4s ease both}
+.splash-mark svg{width:74px;height:74px;fill:none;stroke:var(--acc);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.emblem-shield{stroke-dasharray:140;stroke-dashoffset:140;animation:drawIn 1s cubic-bezier(.65,.05,.36,1) forwards}
+.emblem-check{stroke-dasharray:44;stroke-dashoffset:44;animation:drawIn .5s .6s cubic-bezier(.65,.05,.36,1) forwards}
+@keyframes drawIn{to{stroke-dashoffset:0}}
+.splash-ring{position:absolute;inset:0;margin:auto;width:96px;height:96px;border-radius:50%;border:1.5px solid var(--acc);opacity:0;animation:ringPulse 2.6s var(--ease) infinite}
+.splash-ring.r2{animation-delay:1.3s}
+@keyframes ringPulse{0%{transform:scale(.5);opacity:.5}70%{transform:scale(1.12);opacity:0}100%{opacity:0}}
+.splash-title{opacity:0;transform:translateY(10px);animation:fadeUpS .55s .55s var(--ease) forwards;letter-spacing:4px}
+.splash-sub{opacity:0;transform:translateY(8px);animation:fadeUpS .55s .72s var(--ease) forwards;letter-spacing:2px}
+@keyframes fadeUpS{to{opacity:1;transform:none}}
+.splash-bar{position:relative;width:132px;height:2px;border-radius:2px;background:var(--line);overflow:hidden;margin-top:6px}
+[data-theme] .splash-bar > i{width:38%;height:100%;background:var(--acc);border-radius:2px;transform:none;animation:slideX 1.25s var(--ease) infinite}
+@keyframes slideX{0%{transform:translateX(-120%)}100%{transform:translateX(340%)}}
+</style>
+</head>
+<body>
+
+<div id="splash">
+  <div class="splash-mark">
+    <span class="splash-ring"></span>
+    <span class="splash-ring r2"></span>
+    <svg viewBox="0 0 24 24" class="splash-emblem" aria-hidden="true">
+      <path class="emblem-shield" d="M12 2l8 4v6c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6z"/>
+      <path class="emblem-check" d="M9 12l2 2 4-4"/>
+    </svg>
+  </div>
+  <div class="splash-title">卡密验证</div>
+  <div class="splash-sub">安全验证 · 云控管理</div>
+  <div class="splash-bar"><i></i></div>
+</div>
+
+<div class="app" id="app">
+  <div class="topbar">
+    <h1>卡密验证</h1>
+    <button class="theme-toggle" id="theme-btn">主题</button>
+  </div>
+  <div class="ann" id="ann"></div>
+  <div class="banner" id="lock"></div>
+  <div class="banner" id="err" style="display:none"></div>
+  <div class="card">
+    <label>请输入卡密</label>
+    <input id="key" class="k" placeholder="XXXX-XXXX-XXXX-XXXX" autocomplete="off" inputmode="text" spellcheck="false">
+    <button class="act" id="act">验证激活</button>
+    <div id="out" class="muted" style="margin-top:12px"></div>
+  </div>
+  <!-- 注入者自定义模块（购买链接等，显示在输入卡密下方；按 owner 隔离） -->
+  <div class="card" id="owner-mod" style="display:none"></div>
+  <div class="card" id="res" style="display:none">
+    <div class="row"><strong>状态</strong><span id="r-status" style="color:var(--ok)">已激活</span></div>
+    <div class="muted" style="margin-top:10px">激活时间：<span id="r-act"></span></div>
+    <div class="muted">到期时间：<span id="r-exp"></span></div>
+    <div class="muted">剩余时长：<span id="r-cd" class="mono"></span></div>
+    <div id="r-warn" style="display:none;margin-top:10px;border:1px solid rgba(245,166,35,.6);color:#f5a623;background:rgba(245,166,35,.08);border-radius:10px;padding:9px 12px;font-size:13px;font-weight:600"></div>
+    <button class="act" id="r-enter" style="margin-top:14px">进入软件</button>
+    <div class="hint" id="res-hint"></div>
+  </div>
+  <div class="selfver" id="selfver"></div>
+  <div class="ownerline" id="owner-line" style="display:none"></div>
+  <div class="qqline">需要云注入后台管理系统？加QQ <b>2643492766</b> 或加群 <b>1034833548</b></div>
+  <div class="qqline" id="owner-admin-line">管理端：未配对</div>
+</div>
+
+<div class="mask" id="upd-mask">
+  <div class="box">
+    <div class="um" id="upd-msg"></div>
+    <button class="ub" id="upd-btn">立即更新</button>
+  </div>
+</div>
+
+<script>
+const API = API_BASE + "/index.php";
+let exp = 0, timer = null;
+// 验证端归属：注入时写入 ?owner=<注入者邮箱>（本地壳模式下由 CardKeyBridge 注入，页面兜底读 URL）
+const OWNER = __GP__.owner || new URLSearchParams(location.search).get("owner") || "";
+let CODE = __GP__.code || new URLSearchParams(location.search).get("code") || "";   // 配对码（新注入产物携带，用于绑定归属）；let 以便下方按 app 补拉时赋值
+const APP = __GP__.app || new URLSearchParams(location.search).get("app") || "";   // app 包名（无码时按此从服务器拉配对码）
+const GATE_VER = parseInt(__GP__.ver || new URLSearchParams(location.search).get("ver") || "0", 10) || 0;   // 注入时间戳版本（新注入产物携带）
+window.__APP_VER__ = GATE_VER;   // 让版本检查/兜底轮询用注入时间戳做比对
+let EFFECTIVE_OWNER = OWNER;   // 实际生效归属：被绑定后切换为绑定者邮箱
+
+/* 是否在 APK 壳内（WebView 通过 addJavascriptInterface 注入了 CardKeyBridge） */
+function inShell(){
+  try { return !!(window.CardKeyBridge && typeof window.CardKeyBridge.launchOriginal === "function"); }
+  catch(e){ return false; }
+}
+
+/* ===== 设备管理 + 激活记忆（重进不再被“已激活”拦截）===== */
+function deviceId(){
+  let d = store.getItem("cardkey_device");
+  if(!d){ d = "dev_" + Math.random().toString(36).slice(2) + Date.now().toString(36); store.setItem("cardkey_device", d); }
+  return d;
+}
+const PASS_KEY = "cardkey_gate_pass";
+function savePass(rec){ try{ store.setItem(PASS_KEY, JSON.stringify(rec)); }catch(e){} }
+function loadPass(){
+  try{
+    const s = store.getItem(PASS_KEY); if(!s) return null;
+    const o = JSON.parse(s);
+    if(o.permanent) return o;
+    if(o.expires_at && o.expires_at > Date.now()/1000) return o;
+    return null; // 已过期则失效，回到输入
+  }catch(e){ return null; }
+}
+/* 心跳：上报在线（用于后台“正在使用人数”统计） */
+function beat(){
+  try{
+    fetch(API + "?action=heartbeat&device=" + encodeURIComponent(deviceId()), {method:"POST"}).catch(()=>{});
+  }catch(e){}
+}
+
+/* ===== 版本检查 / 强制更新 ===== */
+let forcedUpdate = false;
+function getLocalVersion(){
+  try { if(inShell() && typeof window.CardKeyBridge.getAppVersion === "function"){
+    const raw = String(window.CardKeyBridge.getAppVersion());
+    const m = raw.match(/\d+/);          // 取版本名中的整数版本号（如 "8.0" -> 8）
+    return m ? m[0] : raw;
+  } } catch(e){}
+  return "web"; // 网页独立模式不参与强制更新
+}
+async function checkUpdate(){
+  // 注入壳：参与"停用旧版"检查 —— 服务端 gate_min_ver 是版本门槛（注入时间戳），
+  // 本验证端 ver < 门槛 = 旧版已停用 → 全屏提示无法使用（旧包无 ver=0 全量停用，新注入包自动放行）
+  if(inShell()){
+    const v = parseInt(window.__APP_VER__ || "0", 10) || 0;
+    try{
+      const r = await fetch(API + "?action=version_check&v=" + encodeURIComponent(v)).then(x => x.json());
+      if(r.ok && typeof r.gate_min_ver === "number" && v < r.gate_min_ver){
+        const mask = document.getElementById("upd-mask");
+        const msg = document.getElementById("upd-msg");
+        const btn = document.getElementById("upd-btn");
+        if(!mask || !msg || !btn) return;
+        msg.textContent = "⚠️ 检测到新版本，当前版本已停止服务。\n点击「立即更新」获取最新版本（下载 .zip，解压后安装）。";
+        btn.textContent = "立即更新";
+        btn.onclick = () => {
+          // 跳转下载页：网页内显示下载按钮 + 复制链接兜底（不依赖壳内下载代码，最稳）
+          window.location.href = API_BASE + "/download.html";
+        };
+        mask.classList.add("show");
+        const app = document.getElementById("app");
+        if(app) app.style.display = "none";
+      }
+    }catch(e){}
+    return;
+  }
+  // 网页独立模式不参与强制更新
+  const v = getLocalVersion();
+  if(v === "web") return;
+  try{
+    const r = await fetch(API + "?action=version_check&v=" + encodeURIComponent(v)).then(x => x.json());
+    if(r.ok && r.need_update) showUpdate(r.url, r.force === 1);
+  }catch(e){}
+}
+function showUpdate(url, force){
+  const mask = document.getElementById("upd-mask");
+  const btn = document.getElementById("upd-btn");
+  document.getElementById("upd-msg").textContent = force
+    ? "检测到新版本，必须更新到最新版本才能继续使用。"
+    : "检测到新版本，建议更新。";
+  btn.textContent = "立即更新";
+  btn.onclick = () => {
+    if(inShell() && typeof window.CardKeyBridge.downloadAndInstall === "function"){
+      try { window.CardKeyBridge.downloadAndInstall(url); return; } catch(e){ console.error("downloadAndInstall 失败", e); }
+    }
+    // 非壳环境：当前窗口打开（不弹外部浏览器，避免被系统甩到浏览器应用）
+    window.location.href = url;
+  };
+  if(force){ forcedUpdate = true; mask.classList.add("show"); document.getElementById("app").style.display = "none"; }
+  else { // 非强制：用底部横幅提示
+    const b = document.getElementById("lock");
+    b.style.display = "block";
+    b.innerHTML = "🆕 有新版本可用，<a href='#' id='upd-link' style='color:#4d7cf6'>点击更新</a>";
+    document.getElementById("upd-link").onclick = (e)=>{ e.preventDefault(); btn.onclick(); };
+  }
+}
+
+/* ===== 服务器复核：自动放行前确认卡密仍有效（修复“后台删除后仍可用”）===== */
+async function verifyServer(key){
+  if(!key) return {ok:false, reason:"本地无卡密记录"};
+  try{
+    // 带设备号 + 壳标记（一卡一设备：壳内非绑定设备拒绝；网页独立模式不校验，便于预览/测试）
+    const r = await fetch(API + "?action=verify&key=" + encodeURIComponent(key)
+      + "&owner=" + encodeURIComponent(EFFECTIVE_OWNER || "")
+      + "&device=" + encodeURIComponent(deviceId())
+      + "&shell=" + (inShell() ? 1 : 0)).then(x => x.json());
+    if(r.ok){
+      if(r.status === "revoked") return {ok:false, reason:"卡密已被作废"};
+      if(r.status === "expired" || (r.expires_at && r.expires_at < Date.now()/1000)) return {ok:false, reason:"卡密已过期"};
+      return {ok:true, info:r};
+    }
+    return {ok:false, reason: r.error || "卡密已失效（可能已在后台被删除）"};
+  }catch(e){
+    return {ok:"offline"}; // 网络不通：走离线兜底，下次联网启动再复核
+  }
+}
+function showInvalid(msg){
+  const app = document.getElementById("app");
+  if(app) app.classList.add("show");
+  const b = document.getElementById("lock");
+  if(b){ b.textContent = "⛔ " + msg; b.style.display = "block"; }
+}
+
+/* ===== 已激活状态页：状态卡 + 剩余时间 + 进入软件按钮 ===== */
+function bindEnterBtn(){
+  const en = document.getElementById("r-enter");
+  if(!en) return;
+  en.textContent = "进入软件";
+  en.onclick = function(){
+    if(inShell()){
+      try { window.CardKeyBridge.launchOriginal(); return; }
+      catch(e){ en.textContent = "拉起应用失败，请手动打开"; }
+    } else {
+      en.textContent = "（网页预览模式，请直接在应用中打开）";
+    }
+  };
+}
+function showActivated(rec, info){
+  const expT = (info && info.expires_at) || rec.expires_at || 0;
+  const permanent = !!((info && info.permanent) || rec.permanent);
+  exp = permanent ? 0 : expT;
+  const lock = document.getElementById("lock");
+  if(lock) lock.style.display = "none";
+  const app = document.getElementById("app");
+  if(app) app.classList.add("show");
+  document.getElementById("r-status").textContent = "已激活";
+  document.getElementById("r-act").textContent = fmtDateTime((info && info.activated_at) || rec.activated_at);
+  document.getElementById("r-exp").textContent = permanent ? "永久有效" : fmtDateTime(expT);
+  document.getElementById("res").style.display = "block";
+  document.getElementById("res-hint").textContent = inShell() ? "点击「进入软件」开始使用" : "（网页预览模式，请直接在应用中打开）";
+  // 到期倒计时横幅：剩余 ≤3 天黄色醒目提示
+  const rw = document.getElementById("r-warn");
+  if(rw){
+    if(permanent){ rw.style.display = "none"; }
+    else{
+      const days = (expT - Date.now() / 1000) / 86400;
+      if(days <= 3){
+        rw.style.display = "block";
+        rw.textContent = days <= 0 ? "⚠️ 卡密已到期，请尽快续费" : ("⚠️ 剩余 " + Math.max(0, Math.ceil(days)) + " 天到期，请及时续费");
+      } else { rw.style.display = "none"; }
+    }
+  }
+  tick(); if(timer) clearInterval(timer);
+  timer = setInterval(tick, 1000);
+  bindEnterBtn();
+}
+
+/* ===== 自动放行：先服务器复核，确认卡密仍有效再放行（壳内拉起原 App）===== */
+async function tryAutoPass(){
+  if(forcedUpdate) return;
+  const rec = loadPass();
+  if(!rec || !rec.key) return false;
+  beat();
+  // 关键修复：放行前向服务器复核，删除/作废/过期都会被拦截
+  const v = await verifyServer(rec.key);
+  if(v.ok === false){
+    store.removeItem(PASS_KEY);           // 清掉本地记忆，回到输入页
+    showInvalid(v.reason || "卡密已失效，请重新输入");
+    return false;
+  }
+  // 离线：必须联网与服务器同步才能进入（需求：无网络不放行）
+  if(v.ok === "offline"){
+    showInvalid("无法连接服务器，请联网后重试（卡密验证需联网同步）");
+    return false; // 不清本地记录，联网后仍可正常使用
+  }
+  // 2026-08-14 需求：已有激活记忆且复核通过 → 显示状态卡（剩余时间）+ 进入软件按钮
+  showActivated(rec, v.info || rec);
+  return true;
+}
+
+/* 主题切换（4 套配色循环：曜石黑 → 暮光蓝 → 商务金 → 雾白） */
+const THEME_ORDER = ["dark", "blue", "gold", "light"];
+const THEME_NAMES = { dark: "曜石黑", blue: "暮光蓝", gold: "商务金", light: "雾白" };
+function setTheme(name){
+  if(document.documentElement.getAttribute("data-theme") === name) return;
+  document.documentElement.setAttribute("data-theme", name);
+  store.setItem("cardkey_user_theme", name);
+  updateThemeBtn();
+}
+function updateThemeBtn(){
+  const t = document.documentElement.getAttribute("data-theme") || "dark";
+  const btn = document.getElementById("theme-btn");
+  if(btn) btn.textContent = "主题 · " + (THEME_NAMES[t] || t);
+}
+document.getElementById("theme-btn").onclick = () => {
+  const cur = document.documentElement.getAttribute("data-theme") || "dark";
+  const i = THEME_ORDER.indexOf(cur);
+  setTheme(THEME_ORDER[(i + 1) % THEME_ORDER.length]);
+};
+updateThemeBtn();
+
+function pad(n){ return String(n).padStart(2, "0"); }
+function fmtDateTime(t){
+  if(!t) return "-";
+  const d = new Date(t * 1000);
+  return d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate()) + " " + pad(d.getHours()) + ":" + pad(d.getMinutes()) + ":" + pad(d.getSeconds());
+}
+function cd(e){
+  if(e === 0) return "永久有效";
+  let s = Math.floor(e - Date.now() / 1000);
+  if(s <= 0) return "已到期";
+  const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60), x = s % 60;
+  return d + "天" + h + "时" + m + "分" + x + "秒";
+}
+function tick(){ document.getElementById("r-cd").textContent = cd(exp); }
+
+/* 公告改由底部 SSE 接收后，以屏幕正中央弹框呈现（见脚本末尾） */
+
+function showLock(msg){ const b = document.getElementById("lock"); b.textContent = msg; b.style.display = "block"; }
+
+/* 全局错误浮层：任何 JS 异常都直接显示在屏幕上，便于排查（避免只看得到闪退/白屏） */
+window.addEventListener("error", function(e){
+  try{
+    const el = document.getElementById("err");
+    if(!el) return;
+    el.style.display = "block";
+    el.innerHTML = "⚠️ 页面错误：" + (e.message || e.error || "未知") + (e.filename ? "<br><small>" + e.filename + ":" + e.lineno + "</small>" : "");
+  }catch(_){}
+});
+window.addEventListener("unhandledrejection", function(e){
+  try{
+    const el = document.getElementById("err");
+    if(!el) return;
+    el.style.display = "block";
+    el.innerHTML = "⚠️ 异步错误：" + (e.reason && e.reason.message ? e.reason.message : e.reason);
+  }catch(_){}
+});
+
+/* 核心：激活成功后的分支处理 */
+function onActivated(r, k){
+  savePass({key:k, expires_at: r.expires_at, activated_at: r.activated_at, permanent: !!r.permanent});
+  const out = document.getElementById("out");
+  // 壳内：验证通过 -> 拉起原 App（CardKeyBridge.launchOriginal 会 startActivity 并 finish 当前壳）
+  if(inShell()){
+    out.textContent = "✅ 验证通过，正在进入应用…";
+    try {
+      setTimeout(function(){
+        try { window.CardKeyBridge.launchOriginal(); }
+        catch(e){ console.error("launchOriginal 失败", e); fallbackShow(r); return; }
+        // 1.5s 后读取 Java 侧真实失败原因（getLastError），非空则直接显示，便于定位"验证通过但进不去"
+        setTimeout(function(){
+          try{
+            const err = (window.CardKeyBridge && window.CardKeyBridge.getLastError) ? String(window.CardKeyBridge.getLastError()) : "";
+            if(err){
+              const el = document.getElementById("err");
+              if(el){ el.style.display = "block"; el.innerHTML = "⚠️ 拉起原应用失败：" + err.slice(0, 220); }
+            }
+          }catch(_){}
+        }, 1500);
+      }, 650);
+      return;
+    } catch(e){ console.error("launchOriginal 调用异常", e); }
+  }
+  // 独立打开 / 兜底：展示倒计时页
+  fallbackShow(r);
+}
+function fallbackShow(r){
+  const out = document.getElementById("out");
+  out.textContent = "✅ 激活成功";
+  exp = r.expires_at;
+  document.getElementById("r-act").textContent = fmtDateTime(r.activated_at);
+  document.getElementById("r-exp").textContent = r.permanent ? "永久有效" : fmtDateTime(r.expires_at);
+  document.getElementById("res").style.display = "block";
+  document.getElementById("res-hint").textContent = inShell() ? "点击「进入软件」开始使用" : "（网页预览模式，请直接在应用中打开）";
+  // 到期倒计时横幅：剩余 ≤3 天黄色醒目提示
+  const rw = document.getElementById("r-warn");
+  if(rw){
+    if(r.permanent){ rw.style.display = "none"; }
+    else{
+      const days = (r.expires_at - Date.now() / 1000) / 86400;
+      if(days <= 3){
+        rw.style.display = "block";
+        rw.textContent = days <= 0 ? "⚠️ 卡密已到期，请尽快续费" : ("⚠️ 剩余 " + Math.max(0, Math.ceil(days)) + " 天到期，请及时续费");
+      } else { rw.style.display = "none"; }
+    }
+  }
+  tick(); if(timer) clearInterval(timer);
+  timer = setInterval(tick, 1000);
+  bindEnterBtn();
+}
+
+document.getElementById("act").onclick = async () => {
+  const k = document.getElementById("key").value.trim().toUpperCase();
+  const out = document.getElementById("out");
+  if(!k){ out.textContent = "请输入卡密"; return; }
+  out.textContent = "验证中…";
+  try{
+    const r = await fetch(API + "?action=activate", {
+      method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: "key=" + encodeURIComponent(k) + "&owner=" + encodeURIComponent(EFFECTIVE_OWNER || "") + "&device=" + encodeURIComponent(deviceId())
+    }).then(async x => {
+      const t = await x.text();
+      try { return JSON.parse(t); } catch(ex){ throw new Error("服务器返回异常：" + t.slice(0,120)); }
+    });
+    if(!r.ok){
+      out.textContent = "失败：" + r.error;
+      if(r.error === "卡密已过期") showLock("该卡密已过期，访问权限已锁定，卡密已销毁，无法继续使用。");
+      return;
+    }
+    onActivated(r, k);
+  }catch(e){
+    out.textContent = "网络未连接，请检查网络后重试（卡密验证需联网同步）";
+    console.error("activate 失败", e);
+  }
+};
+
+/* 开屏：直接启动 + 6 秒兜底，避免永久卡屏 */
+function bootSplash(){
+  setTimeout(() => {
+    const sp = document.getElementById("splash");
+    if(sp) sp.classList.add("hide");
+    setTimeout(() => {
+      if(forcedUpdate) return; // 强制更新中，不进入主界面
+      document.getElementById("app").classList.add("show");
+      tryAutoPass();
+    }, 620);
+  }, 2200);
+}
+bootSplash();
+setTimeout(() => {
+  const sp = document.getElementById("splash");
+  if(sp && !sp.classList.contains("hide")){ sp.classList.add("hide"); if(!forcedUpdate) document.getElementById("app").classList.add("show"); }
+}, 6000);
+/* 验证页底部：拉取并显示当前版本（极低调小字；离线/失败时保持空白） */
+async function loadSelfVer(){
+  const el = document.getElementById("selfver");
+  if(!el) return;
+  // 壳版本自证（2026-08-11）：新壳(20260811 远程优先+离线兜底)可读，旧壳无此方法=空
+  let shv = "";
+  try{ if(window.CardKeyBridge && typeof window.CardKeyBridge.getShellVersion === "function") shv = " · 壳 " + String(window.CardKeyBridge.getShellVersion()); }catch(_){}
+  try{
+    const r = await fetch(API + "?action=version_check").then(x => x.json());
+    // 版本自证（2026-08-06）：显示当前安装包版本 vs 服务器最新，防下错/装旧版本
+    let t = "";
+    if(GATE_VER > 0) t += "当前版本 V" + GATE_VER;
+    if(r && r.gate_min_ver) t += (t ? " · " : "") + "最新版本 V" + r.gate_min_ver;
+    if(t){ el.textContent = t + shv; if(GATE_VER > 0 && r && r.gate_min_ver && GATE_VER < r.gate_min_ver){ el.style.color = "#f87171"; el.textContent += " ⚠️ 版本过低，请更新"; } }
+    else if(r && r.latest) el.textContent = "客户端 v" + r.latest + shv;
+    else if(shv) el.textContent = shv.replace(" · ", "");
+  }catch(e){ if(shv) el.textContent = shv.replace(" · ", ""); }
+}
+/* 启动版本检查（含强制更新拦截）+ 周期心跳（维持后台在线人数统计） */
+checkUpdate();
+loadSelfVer();
+beat();
+setInterval(beat, 60000);
+
+/* ===== 公告居中弹框（SSE 推送 / 加载时弹出，可关闭） ===== */
+let _seenWebVer = Number(store.getItem("cardkey_webver") || 0);
+let _seenLatest = -1;
+let _seenAnnKey = "", _dismissedAnnKey = "";   // 当前/已关闭的公告内容指纹，避免被 SSE/轮询反复弹
+function showAnnModal(text, title){
+  const m = document.getElementById("annModal-mask");
+  document.getElementById("annModal-body").textContent = text;
+  document.getElementById("annModal-title").textContent = title || "系统公告";
+  m.style.display = "flex";
+}
+function hideAnnModal(){
+  const m = document.getElementById("annModal-mask");
+  if(m) m.style.display = "none";
+  _dismissedAnnKey = _seenAnnKey;   // 记住关闭的是哪条，避免被 SSE/轮询反复重新弹出
+}
+
+/* 应用验证端远程配置（标题/默认主题/底部文字）；失败自动用默认，不影响使用 */
+function applyShellCfg(){
+  try{
+    fetch(API + "?action=shell_cfg&owner=" + encodeURIComponent(EFFECTIVE_OWNER || "")).then(x => x.json()).then(r => {
+      if(!r || !r.ok || !r.cfg) return;
+      const c = r.cfg;
+      if(c.title){
+        document.title = c.title;
+        const h = document.querySelector(".app h1"); if(h) h.textContent = c.title;
+        const st = document.querySelector(".splash-title"); if(st) st.textContent = c.title;
+      }
+      if(c.theme){
+        document.documentElement.setAttribute("data-theme", c.theme);
+        try{ store.setItem("cardkey_user_theme", c.theme); }catch(_){}
+        updateThemeBtn();
+      }
+      if(c.qq){
+        const q = document.querySelector(".qqline");
+        if(q){
+          const lines = c.qq.split(/\n+/).map(s => s.trim()).filter(Boolean);
+          q.innerHTML = lines.map(l => {
+            const m = l.match(/^(https?:\/\/[^\s]+)$/i);
+            return m ? '<a href="' + m[1] + '" style="color:var(--acc);text-decoration:underline">' + m[1] + '</a>'
+                     : l.replace(/[<>&"]/g, x => ({"<":"&lt;",">":"&gt;","&":"&amp;","\"":"&quot;"}[x]));
+          }).join(" · ");
+        }
+      }
+    }).catch(()=>{});
+  }catch(_){}
+}
+/* 拉取本验证端（注入者 owner）专属的验证公告 + 自定义模块；后台公告不在此显示 */function loadOwnerContent(){
+  if(!EFFECTIVE_OWNER) return;
+  const q = "&owner=" + encodeURIComponent(EFFECTIVE_OWNER);
+  fetch(API + "?action=announce_verify" + q).then(x => x.json()).then(r => {
+    if(r && r.ok && r.announce_verify){
+      const txt = "🔑 " + r.announce_verify;
+      if(txt !== _seenAnnKey && txt !== _dismissedAnnKey){
+        _seenAnnKey = txt;
+        showAnnModal(txt, "公告");
+      }
+    }
+  }).catch(()=>{});
+  fetch(API + "?action=module" + q).then(x => x.json()).then(r => {
+    const el = document.getElementById("owner-mod");
+    if(!el) return;
+    const m = (r && r.module || "").trim();
+    if(!m){ el.style.display = "none"; return; }
+    el.style.display = "";
+    el.innerHTML = m.split(/\n+/).map(line => {
+      const t = line.trim();
+      if(!t) return "";
+      const m2 = t.match(/^(https?:\/\/[^\s]+)$/i);
+      if(m2) return '<div class="mod-line"><a href="' + m2[1] + '" style="color:var(--acc);text-decoration:underline">' + m2[1] + '</a></div>';
+      return '<div class="mod-line">' + t.replace(/[<>&"]/g, c => ({"<":"&lt;",">":"&gt;","&":"&amp;","\"":"&quot;"}[c])) + '</div>';
+    }).join("");
+  }).catch(()=>{});
+}
+
+/* 处理服务端推送状态：网页更新→自动刷新；APK版本→更新提示（公告改由 loadOwnerContent 按 owner 拉取） */
+function handlePushState(st){
+  if(!st) return;
+  // 1) 网页资源（gate/admin/user html）被重新部署 → 自动刷新到最新
+  if(st.web_ver){
+    if(_seenWebVer && st.web_ver > _seenWebVer){
+      // 关键修复：reload 前先把“已刷到的新版本号”持久化，否则 reload 后读到仍是旧值，
+      // 会再次判定“有新版本”而继续 reload，形成瞬间无限刷新死循环。
+      try { store.setItem("cardkey_webver", String(st.web_ver)); } catch(e){}
+      location.reload(true); return;
+    }
+    _seenWebVer = st.web_ver; store.setItem("cardkey_webver", String(st.web_ver));
+  }
+  // 2) APK 版本发布 → 触发已有的版本更新检查
+  if(st.latest && st.latest !== _seenLatest){
+    _seenLatest = st.latest;
+    if(typeof checkUpdate === "function") checkUpdate();
+  }
+}
+
+/* SSE 实时推送：服务端一有变更，打开的页面立刻收到（无需手动刷新） */
+(function(){
+  // 用事件委托绑定关闭（脚本在弹框 HTML 之前解析，直接 getElementById 会拿不到元素）
+  document.addEventListener("click", function(e){
+    const t = e.target;
+    if(!t) return;
+    if(t.id === "annModal-x" || t.id === "annModal-ok" || t.id === "annModal-mask") hideAnnModal();
+  });
+  let es = null;
+  try { es = new EventSource(API_BASE + "/index.php?action=stream"); } catch(_) {}
+  if(es){ es.onmessage = (e) => { try { handlePushState(JSON.parse(e.data)); } catch(_){} }; }
+  // 兜底轮询（兼容不支持/被拦截 SSE 的环境）：每 15s 拉一次版本 + 本验证端公告/模块
+  setInterval(() => {
+    fetch(API + "?action=version_check&v=" + (window.__APP_VER__ || 0)).then(x => x.json()).then(r => {
+      handlePushState({ web_ver: r.web_ver, latest: r.latest });
+    }).catch(()=>{});
+    if(EFFECTIVE_OWNER) loadOwnerContent();
+  }, 15000);
+  /* 验证端署名：显示控制者用户名（注册时填的），让终端知道受谁控制 */
+  (function(){
+    const ol = document.getElementById("owner-line");
+    if(!ol || !EFFECTIVE_OWNER) return;
+    fetch(API + "?action=owner_info&owner=" + encodeURIComponent(EFFECTIVE_OWNER)).then(x => x.json()).then(r => {
+      if(!r || !r.ok) return;
+      const un = r.username || "";
+      ol.textContent = un ? ("本验证端由「" + un + "」提供") : "本验证端未署名";
+      ol.style.display = "block";
+    }).catch(()=>{});
+  })();
+  /* 配对/管理端信息（请加群/加QQ 下方）：
+     - 验证端带配对码(CODE)且未绑定 → 显示"配对码：XXXX（点此复制，到后台绑定）"
+     - 已绑定 → 显示"管理端：xxx"，并把生效归属(EFFECTIVE_OWNER)切到绑定者（公告/模块随之切换）
+     - 旧产物(无 CODE) → 按 URL owner 显示管理端，查不到显示"未配对" */
+  (async function(){
+    // 2026-08-06：CLI 直跑注入的包无配对码 → 从服务器按 app 补拉，恢复绑定入口
+    if(!CODE && APP){
+      try{
+        const rg = await fetch(API + "?action=gate_code&app=" + encodeURIComponent(APP)).then(x => x.json());
+        if(rg && rg.ok && rg.code) CODE = rg.code;
+      }catch(_){}
+    }
+    const al = document.getElementById("owner-admin-line");
+    if(!al) return;
+    const show = (t) => { al.textContent = t; al.style.cursor = ""; al.onclick = null; };
+    const showAdmin = (un, em) => { show(un ? "管理端：" + un : (em ? "管理端：" + em : "管理端：未配对")); };
+    const showCode = () => {
+      al.textContent = "配对码：" + CODE + "（点此复制，到后台绑定）";
+      al.style.cursor = "pointer";
+      al.onclick = () => {
+        try{ navigator.clipboard.writeText(CODE); al.textContent = "配对码：" + CODE + "（已复制 ✓）"; }
+        catch(_){ al.textContent = "配对码：" + CODE; }
+      };
+    };
+    if(!CODE){
+      // 旧产物（无配对码）：按 URL owner 显示管理端
+      if(!OWNER){ show("管理端：未配对"); return; }
+      fetch(API + "?action=owner_info&owner=" + encodeURIComponent(OWNER)).then(x => x.json()).then(r => {
+        showAdmin((r && r.username) || "", (r && r.owner) || "");
+      }).catch(()=>{ show("管理端：未配对"); });
+      return;
+    }
+    fetch(API + "?action=bind_status&code=" + encodeURIComponent(CODE)).then(x => x.json()).then(r => {
+      if(!r || !r.ok){ show("管理端：未配对"); return; }
+      if(r.bound){
+        // 已绑定：归属切到绑定者，显示管理端
+        EFFECTIVE_OWNER = r.owner || OWNER;
+        showAdmin(r.username || "", r.owner || "");
+        if(EFFECTIVE_OWNER) setTimeout(loadOwnerContent, 200);
+        const ol = document.getElementById("owner-line");
+        if(ol && EFFECTIVE_OWNER){
+          fetch(API + "?action=owner_info&owner=" + encodeURIComponent(EFFECTIVE_OWNER)).then(x => x.json()).then(ri => {
+            if(!ri || !ri.ok) return;
+            const un2 = ri.username || "";
+            ol.textContent = un2 ? ("本验证端由「" + un2 + "」提供") : "本验证端未署名";
+            ol.style.display = "block";
+          }).catch(()=>{});
+        }
+      } else {
+        showCode();
+      }
+    }).catch(()=>{ show("管理端：未配对"); });
+  })();
+  // 打开即拉取本验证端专属公告/模块
+  if(EFFECTIVE_OWNER) setTimeout(loadOwnerContent, 400);
+  setTimeout(applyShellCfg, 500);
+/* 崩溃日志自动上报（2026-08-06）：壳内存有上次崩溃日志 → 上报服务器后清空，远程排障零操作 */
+(function(){
+  try{
+    if(inShell() && window.CardKeyBridge && typeof window.CardKeyBridge.getLog === "function"){
+      var clog = String(window.CardKeyBridge.getLog() || "");
+      if(clog && clog.length > 20){
+        fetch(API + "?action=crash_report", {method:"POST", headers:{"Content-Type":"application/x-www-form-urlencoded"}, body:"log=" + encodeURIComponent(clog)})
+          .then(function(r){ return r.json(); }).then(function(r){
+            if(r && r.ok && window.CardKeyBridge.clearLog){ try{ window.CardKeyBridge.clearLog(); }catch(_){} }
+          }).catch(function(){});
+      }
+    }
+  }catch(_){}
+})();
+
+})();
+</script>
+<!-- 公告居中弹框（SSE 推送 / 加载时弹出，可关闭） -->
+<div class="mask" id="annModal-mask" style="display:none">
+  <div class="annmodal" id="annModal-box">
+    <div class="am-h">
+      <span id="annModal-ico">📢</span>
+      <span id="annModal-title">系统公告</span>
+      <button class="am-x" id="annModal-x" aria-label="关闭">×</button>
+    </div>
+    <div class="am-b" id="annModal-body"></div>
+    <div class="am-f"><button class="act" id="annModal-ok">我知道了</button></div>
+  </div>
+</div>
+</body>
+</html>
